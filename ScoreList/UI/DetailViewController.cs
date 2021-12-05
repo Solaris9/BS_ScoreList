@@ -66,24 +66,26 @@ namespace ScoreList.UI
             info = null;
         }
 
+        
+        //TODO: Need to fix this shit too.
         [UIAction("StartLevel")]
         public async Task StartLevel()
         {
-            /*if (!canPlay)
+            if (!canPlay)
             {
                 await beatsaver.BeatmapByHash(info.SongHash);
                 actionButton.SetButtonText("Play");
                 return;
-            }*/
+            }
 
-           /* var token = new System.Threading.CancellationToken();
+            var token = new System.Threading.CancellationToken();
             var beatmapDifficulty = SongUtils.GetBeatmapDifficulty(leaderboard.Difficultly);
             var beatmapCharacteristic = ScriptableObject.CreateInstance<BeatmapCharacteristicSO>();
             var beatmapLevelResult = await beatmapLevelsModel.GetBeatmapLevelAsync($"custom_level_{info.SongHash}", token);
             var beatmapLevelData = beatmapLevelResult.beatmapLevel.beatmapLevelData;
-            var difficultyBeatmap = BeatmapLevelDataExtensions.GetDifficultyBeatmap(beatmapLevelData, beatmapCharacteristic, beatmapDifficulty);
+            var difficultyBeatmap = beatmapLevelData.GetDifficultyBeatmap(beatmapCharacteristic, beatmapDifficulty);
 
-            menuTransitionsHelper.StartStandardLevel("SoloStandard", difficultyBeatmap, null, null, null, null, null, null, null, false, null, null);*/
+            menuTransitionsHelper.StartStandardLevel("SoloStandard", difficultyBeatmap, null, null, null, null, null, null, null, false, null, null);
         }
     }
 }

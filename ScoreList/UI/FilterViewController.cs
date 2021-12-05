@@ -96,8 +96,8 @@ namespace ScoreList.UI {
                 SortBy = (string)sort.Value,
                 Filters = filters
             };
-
-            Coordinator.Instance.ShowFilteredScores(query);
+            
+            ScoreListCoordinator.Instance.ShowFilteredScores(query);
         }
 
         [UIAction("FilterSelect")]
