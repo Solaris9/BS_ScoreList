@@ -45,17 +45,17 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BeatmapCore.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="BeatSaverSharp, Version=3.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BeatSaverSharp">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Libs\BeatSaverSharp.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="BSML, Version=1.5.11.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BSML">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Plugins\BSML.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="BS_Utils, Version=1.11.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BS_Utils">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Plugins\BS_Utils.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -70,22 +70,25 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Hive.Versioning">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Libs\Hive.Versioning.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Libs\Newtonsoft.Json.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="SiraUtil, Version=2.5.8.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SiraUtil">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Plugins\SiraUtil.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="SongCore, Version=3.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SongCore">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Plugins\SongCore.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="SongDataCore, Version=1.4.5.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SongDataCore">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Plugins\SongDataCore.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -175,6 +178,9 @@
     <Compile Include="UI\FilterViewController.cs" />
     <Compile Include="UI\ScoreViewController.cs" />
     <Compile Include="UI\ScoreListUI.cs" />
+    <Compile Include="Utils\CSExtensions.cs" />
+    <Compile Include="Utils\Downloader.cs" />
+    <Compile Include="Utils\ScoreSaberUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
