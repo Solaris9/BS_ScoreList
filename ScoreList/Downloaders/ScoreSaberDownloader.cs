@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ScoreList.Utils;
 using SiraUtil.Tools;
 using UnityEngine;
-using Zenject;
 
-namespace ScoreList.Utils
+namespace ScoreList.Downloaders
 {
     public class ScoreSaberDownloader : Downloader
     {
@@ -30,6 +30,7 @@ namespace ScoreList.Utils
             }
             
             string url = CDN_URL + COVERS + hash + ".png";
+            
             var sprite = await MakeImageRequestAsync(url, cancellationToken);
             if (sprite != null)
             {
