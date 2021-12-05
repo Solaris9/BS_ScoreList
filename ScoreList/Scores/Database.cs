@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.IO;
+using ScoreList.Utils;
 
 namespace ScoreList.Scores
 {
@@ -47,7 +48,7 @@ namespace ScoreList.Scores
             return await LeaderboardMapInfo.Get(leaderboard.SongHash);
         }
 
-        public static async Task Create(ScoreSaberLeaderboardEntry entry)
+        public static async Task Create(ScoreSaberUtils.ScoreSaberLeaderboardEntry entry)
         {
             try
             {
@@ -92,7 +93,7 @@ namespace ScoreList.Scores
         public bool PositiveModifiers { get; set; }
         public Task<LeaderboardMapInfo> GetMapInfo() => LeaderboardMapInfo.Get(this.SongHash);
 
-        public static async Task Create(ScoreSaberLeaderboardEntry entry)
+        public static async Task Create(ScoreSaberUtils.ScoreSaberLeaderboardEntry entry)
         {
             try
             {
@@ -136,7 +137,7 @@ namespace ScoreList.Scores
         public string LevelAuthorName { get; set; }
         public DateTime CreatedDate { get; set; }
 
-        public static async Task Create(ScoreSaberLeaderboardInfo leaderboard)
+        public static async Task Create(ScoreSaberUtils.ScoreSaberLeaderboardInfo leaderboard)
         {
             try
             {
