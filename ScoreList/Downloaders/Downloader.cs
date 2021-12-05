@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using IPA.Loader;
 using Newtonsoft.Json;
+using ScoreList.Utils;
 using SiraUtil.Tools;
 using SiraUtil.Zenject;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace ScoreList.Utils
+namespace ScoreList.Downloaders
 {
     public abstract class Downloader
     {
