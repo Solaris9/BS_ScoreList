@@ -1,0 +1,51 @@
+﻿<vertical>
+	<page-button event-click='list#PageUp' direction='Up'></page-button>
+	<custom-list id='list' select-cell='SongSelect' list-width='100' cell-size='14' visible-cells='5'>
+		<horizontal bg='panel-top'>
+			<horizontal>
+				<vertical min-width='10' pad-left='2' pad-top='1'>
+					<text text='~stars' font-size='3'/>
+					<text text='~difficulty' font-size='3'/>
+				</vertical>
+
+				<img src='~icon' pref-height='12' pref-width='12' min-height='12' min-width='12' preserve-aspect='true'/>
+
+				<vertical min-width='40'>
+					<text text='~title' font-size='4'/>
+					<text text='~artist' font-size='2'/>
+					<text text='~mapper' font-size='2'/>
+				</vertical>
+			</horizontal>
+
+			<vertical min-width='25' child-align='MiddleLeft'>
+				<horizontal horizontal-fit='PreferredSize' spacing='2'>
+					<text text='PP' font-size='2'/>
+					<horizontal>
+						<text text='~pp' font-size='2'/>
+						<text text='/' font-size='2'/>
+						<text text='~max-pp' font-size='2'/>
+					</horizontal>
+				</horizontal>
+
+				<horizontal horizontal-fit='PreferredSize' spacing='2'>
+					<text text='Rank ' font-size='2'/>
+					<text text='~rank' font-size='2'/>
+				</horizontal>
+
+				<horizontal horizontal-fit='PreferredSize' spacing='2'>
+					<text text='Misses ' font-size='2'/>
+					<text text='~missed-notes' font-size='2'/>
+				</horizontal>
+
+				<horizontal horizontal-fit='PreferredSize' spacing='2'>
+					<text text='Accruacy' font-size='2'/>
+					<horizontal>
+						<text text='~accuracy' font-size='2'/>
+						<text text='% ' font-size='2'/>
+					</horizontal>
+				</horizontal>
+			</vertical>
+		</horizontal>
+	</custom-list>
+	<page-button event-click='list#PageDown' direction='Down'></page-button>
+</vertical>

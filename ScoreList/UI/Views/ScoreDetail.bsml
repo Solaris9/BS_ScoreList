@@ -1,0 +1,6 @@
+﻿<bg>
+	<vertical child-align="MiddleCenter">
+		<text id='title'/>
+		<button id='actionButton' on-click='StartLevel'/>
+	</vertical>
+</bg>

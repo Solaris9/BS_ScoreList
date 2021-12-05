@@ -1,0 +1,89 @@
+﻿<vertical>
+	<modal click-off-closes='true' show-event='ShowFilters' hide-event='HideFilters' size-delta-x='110' size-delta-y='60' bg='panel-top'>
+		<vertical pad-top='-6'>
+			<vertical pad-top='5' pad-bottom='15'>
+				<vertical bg='panel-top-gradient' vertical-fit='PreferredSize' pad-left='15' pad-right='15'>
+					<text text='Click the filter you want, alter its settings and add it!' align='Center'/>
+					<text text='Note: Only the current selected filter will be added' align='Center'/>
+				</vertical>
+
+				<horizontal vertical-fit='PreferredSize' pref-height='6' spacing='4'>
+					<tab-selector tab-tag='filters' select-cell='FilterSelect'/>
+					<horizontal>
+						<button text='Add'   click-event='HideFilters' on-click='CreateFilter'/>
+						<button text='Close' click-event='HideFilters'/>
+					</horizontal>
+				</horizontal>
+			</vertical>
+
+			<vertical pad-bottom='15'>
+				<tab tags='filters' tab-name='Stars'>
+					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
+						<slider-setting id='filter-stars-minimum' text='Minimum amount of stars' increment='0.5' min='0' max='14' integer-only='false'/>
+						<slider-setting id='filter-stars-maximum' text='Maximum amount of stars' increment='0.5' min='0' max='14' integer-only='false' value='max-stars'/>
+					</vertical>
+				</tab>
+
+				<tab tags='filters' tab-name='Accuracy'>
+					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
+						<slider-setting id='filter-accuracy-minimum' text='Minimum accuracy' increment='1' min='0.0' max='100' integer-only='true'/>
+						<slider-setting id='filter-accuracy-maximum' text='Maximum accuracy' increment='1' min='0.0' max='100' integer-only='true' value='max-accuracy'/>
+					</vertical>
+				</tab>
+
+				<tab tags='filters' tab-name='Misses'>
+					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
+						<slider-setting id='filter-misses-minimum' text='Minimum amount of misses' increment='5' min='0' max='100' integer-only='true'/>
+						<slider-setting id='filter-misses-maximum' text='Maximum amount of misses' increment='5' min='0' max='100' integer-only='true' value='max-misses'/>
+					</vertical>
+				</tab>
+
+				<tab tags='filters' tab-name='Date'>
+					<horizontal vertical-fit='PreferredSize' horizontal-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' spacing='5'>
+						<vertical>
+							<text text='After Date: Month/Year'/>
+							<vertical child-control-width='true'>
+								<slider-setting id='filter-date-after-month' text='' increment='1' min='1'    max='12'        integer-only='true' pref-width='40' formatter='FormatMonth'/>
+								<slider-setting id='filter-date-after-year'  text='' increment='1' min='2018' max='~max-year' integer-only='true' pref-width='40'/>
+							</vertical>
+						</vertical>
+
+						<vertical>
+							<text text='Before Date: Month/Year'/>
+							<vertical  child-control-width='true'>
+								<slider-setting id='filter-date-before-month' text='' value='max-month' increment='1' min='1'    max='12'		  integer-only='true' pref-width='40' formatter='FormatMonth'/>
+								<slider-setting id='filter-date-before-year'  text='' value='max-year' increment='1' min='2018' max='~max-year' integer-only='true' pref-width='40' />
+							</vertical>
+						</vertical>
+					</horizontal>
+				</tab>
+			</vertical>
+		</vertical>
+	</modal>
+	
+	<vertical bg='panel-top' vertical-fit='PreferredSize' pad-left='4' pad-right='4' >
+		<dropdown-list-setting id='sort'  text='Sort'  choices='sort-choices' />
+		<dropdown-list-setting id='order' text='Order' choices='order-choices' />
+	</vertical>
+
+	<vertical pad='3' pad-left='3' pad-right='3' horizontal-fit='Unconstrained'>
+		<vertical id='no-filters-text' bg='panel-top' align='Center' pad='1' pad-left='2' pad-right='2'>
+			<text text='No filters added yet'/>
+		</vertical>
+		<custom-list id='list'>
+			<horizontal bg='panel-top' pad-left='3'>
+				<horizontal>
+					<text text='~name'/>
+					<text text='~data'/>
+				</horizontal>
+				<button text='Remove' on-click='DeleteFilter'/>
+			</horizontal>
+		</custom-list>
+	</vertical>
+	
+	<horizontal bg='panel-top' horizontal-fit='PreferredSize' pad-bottom='1' pad-right='2' pad-left='2' spacing='5'>
+		<button text='Apply' on-click='ApplyFilters'/>
+		<button text='Reset' on-click='ResetFilters'/>
+		<button text='Add' click-event='ShowFilters'/>
+	</horizontal>
+</vertical>
