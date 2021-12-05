@@ -71,7 +71,7 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Hive.Versioning">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Libs\Hive.Versioning.dll</HintPath>
+      <HintPath>$(BeatSaberDir)\Libs\Hive.Versioning.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <Private>False</Private>
@@ -165,10 +165,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Downloaders\Downloader.cs" />
+    <Compile Include="Downloaders\ScoreSaberDownloader.cs" />
     <Compile Include="Installers\MenuInstallers.cs" />
     <Compile Include="Scores\Database.cs" />
     <Compile Include="Scores\Filters.cs" />
-    <Compile Include="Scores\Http.cs" />
     <Compile Include="Scores\ORM.cs" />
     <Compile Include="Scores\Utils.cs" />
     <Compile Include="Plugin.cs" />
@@ -179,8 +180,6 @@
     <Compile Include="UI\ScoreViewController.cs" />
     <Compile Include="UI\ScoreListUI.cs" />
     <Compile Include="Utils\CSExtensions.cs" />
-    <Compile Include="Utils\Downloader.cs" />
-    <Compile Include="Utils\ScoreSaberDownloader.cs" />
     <Compile Include="Utils\ScoreSaberUtils.cs" />
   </ItemGroup>
   <ItemGroup>
