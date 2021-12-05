@@ -180,6 +180,7 @@
     <Compile Include="UI\ScoreListUI.cs" />
     <Compile Include="Utils\CSExtensions.cs" />
     <Compile Include="Utils\Downloader.cs" />
+    <Compile Include="Utils\ScoreSaberDownloader.cs" />
     <Compile Include="Utils\ScoreSaberUtils.cs" />
   </ItemGroup>
   <ItemGroup>

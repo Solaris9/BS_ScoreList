@@ -10,6 +10,7 @@ using UnityEngine;
 using TMPro;
 using BeatSaberMarkupLanguage;
 using System.Linq;
+using SiraUtil.Tools;
 
 namespace ScoreList.UI
 {
@@ -17,11 +18,13 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.ScoreDetail.bsml")]
     class DetailViewController : BSMLAutomaticViewController
     {
-        private MenuTransitionsHelper menuTransitionsHelper;
-        private BeatmapLevelsModel beatmapLevelsModel;
-        private BeatSaver beatsaver;
+        private readonly MenuTransitionsHelper menuTransitionsHelper;
+        private readonly BeatmapLevelsModel beatmapLevelsModel;
+        private readonly BeatSaver beatsaver;
+        private readonly SiraLog _siraLog;
 
         private bool canPlay = true;
+        
 
         private LeaderboardScore score;
         private LeaderboardInfo leaderboard;
@@ -34,10 +37,11 @@ namespace ScoreList.UI
         public TextMeshProUGUI title;
 
         [Inject]
-        public DetailViewController(MenuTransitionsHelper menuTransitionsHelper, BeatmapLevelsModel beatmapLevelsModel)
+        public DetailViewController(MenuTransitionsHelper menuTransitionsHelper, BeatmapLevelsModel beatmapLevelsModel, SiraLog siraLog)
         {
             this.menuTransitionsHelper = menuTransitionsHelper;
             this.beatmapLevelsModel = beatmapLevelsModel;
+            _siraLog = siraLog;
 
             var options = new BeatSaverOptions("ScoreList (Solaris#1969)", "0.0.1");
             beatsaver = new BeatSaver(options);
@@ -68,7 +72,7 @@ namespace ScoreList.UI
 
         
         //TODO: Need to fix this shit too.
-        [UIAction("StartLevel")]
+        /*[UIAction("StartLevel")]
         public async Task StartLevel()
         {
             if (!canPlay)
@@ -77,7 +81,10 @@ namespace ScoreList.UI
                 actionButton.SetButtonText("Play");
                 return;
             }
-
+#if DEBUG
+            _siraLog.Debug($"StartStandardLevel is: {menuTransitionsHelper}");
+#endif
+            
             var token = new System.Threading.CancellationToken();
             var beatmapDifficulty = SongUtils.GetBeatmapDifficulty(leaderboard.Difficultly);
             var beatmapCharacteristic = ScriptableObject.CreateInstance<BeatmapCharacteristicSO>();
@@ -86,6 +93,6 @@ namespace ScoreList.UI
             var difficultyBeatmap = beatmapLevelData.GetDifficultyBeatmap(beatmapCharacteristic, beatmapDifficulty);
 
             menuTransitionsHelper.StartStandardLevel("SoloStandard", difficultyBeatmap, null, null, null, null, null, null, null, false, null, null);
-        }
+        }*/
     }
 }

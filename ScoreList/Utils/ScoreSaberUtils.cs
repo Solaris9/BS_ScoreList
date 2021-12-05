@@ -1,10 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using IPA.Loader;
-using SiraUtil.Tools;
-using SiraUtil.Zenject;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace ScoreList.Utils
 {

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using IPA.Loader;
 using Newtonsoft.Json;
 using SiraUtil.Tools;
@@ -26,6 +24,11 @@ namespace ScoreList.Utils
             USER_AGENT = $"SongList/v{_metadata.Value.HVersion}";
         }
 
+        protected Downloader(SiraLog siraLog)
+        {
+            _siraLog = siraLog;
+        }
+
         ~Downloader()
         {
             foreach (var webRequest in _ongoingWebRequests)
@@ -41,9 +44,29 @@ namespace ScoreList.Utils
                 webRequest.Abort();
             }
         }
+        internal async Task<T> MakeJsonRequestAsync<T>(string url, CancellationToken cancellationToken, Action<float> progressCallback = null)
+        {
+            var www = await MakeRequestAsync(url, cancellationToken, progressCallback);
 
-        internal async Task<Sprite> MakeImageRequestAsync(string url, CancellationToken cancellationToken,
-            Action<float> progressCallback = null)
+            if (www == null)
+            {
+                return default(T);
+            }
+
+            try
+            {
+                T response = JsonConvert.DeserializeObject<T>(www.downloadHandler.text);
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                _siraLog.Warning($"Error parsing response: {e.Message}");
+                return default(T);
+            }
+        }
+        
+        internal async Task<Sprite> MakeImageRequestAsync(string url, CancellationToken cancellationToken, Action<float> progressCallback = null)
         {
             var www = await MakeRequestAsync(url, cancellationToken, progressCallback);
 

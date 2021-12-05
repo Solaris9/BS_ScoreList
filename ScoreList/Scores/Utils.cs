@@ -24,8 +24,6 @@ namespace ScoreList.Scores
     
     public class SongUtils
     {
-        
-
         //TODO: Rewrite the bitmapping to use the new enum.
         public static int ParseModifiers(string value) => 0;
         
