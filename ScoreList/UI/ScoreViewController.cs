@@ -47,7 +47,8 @@ namespace ScoreList.UI {
 
             rank = score.Rank.ToString();
             pp = score.PP.ToString("#.00");
-            modifiers = string.Join(", ", SongUtils.FormatModifiers(score.Modifiers));
+            // TODO: add this back when modifiers are fixed
+            modifiers = ""; //string.Join(", ", SongUtils.FormatModifiers(score.Modifiers));
             missedNotes = score.MissedNotes.ToString();
 
             accuracy = (100f * score.BaseScore / leaderboard.MaxScore).ToString("0.##");

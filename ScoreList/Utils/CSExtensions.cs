@@ -126,4 +126,12 @@ namespace ScoreList.Utils
             }
         }
     }
+
+    public static class ListExtensions
+    {
+        public static void RemoveRange<T>(this List<T> array, T[] values)
+        {
+            foreach (var value in values) array.Remove(value);
+        }
+    }
 }

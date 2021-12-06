@@ -7,17 +7,16 @@ using ScoreList.Scores;
 using UnityEngine.UI;
 using System.Linq;
 using System;
+using ScoreList.Utils;
 
 namespace ScoreList.UI {
     public class FilterListCellWrapper
     {
-        private FilterViewController controller;
+        private readonly FilterViewController controller;
 
-        [UIValue("name")]
-        public string name { get; set; }
+        [UIValue("name")] private readonly string name;
 
-        [UIValue("data")]
-        public string data { get; set; }
+        [UIValue("data")] private readonly string data;
 
         [UIAction("DeleteFilter")]
         internal void DeleteFilter()
@@ -28,7 +27,7 @@ namespace ScoreList.UI {
             controller.list.data.Remove(this);
             controller.list.tableView.ReloadData();
 
-            controller.ToggleNoFiltersText(true);
+            if (controller.filters.Count == 0) controller.ToggleNoFiltersText(true);
         }
 
         public FilterListCellWrapper(FilterViewController controller, string name, string data) 
@@ -43,16 +42,33 @@ namespace ScoreList.UI {
     [ViewDefinition("ScoreList.UI.Views.ScoreFilters.bsml")]
     public class FilterViewController : BSMLAutomaticViewController
     {
+        internal FilterViewController()
+        {
+            var query = "SELECT * FROM scores ORDER BY scores.PP DESC LIMIT 1";
+            var score = DatabaseManager.Client.Query<LeaderboardScore>(query).GetAwaiter().GetResult();
+            maxPP = (int)score.First().PP;
+        }
+        
         // components
 
+        [UIComponent("stars-tab")] public Tab starsTab;
+        [UIComponent("accuracy-tab")] public Tab accuracyTab;
+        [UIComponent("pp-tab")] public Tab ppTab;
+        
+        [UIComponent("no-filters-text")] public LayoutElement noFiltersText;
         [UIComponent("list")] public CustomCellListTableData list;
-        public List<Filter> filters = new List<Filter>();
+        public readonly List<Filter> filters = new List<Filter>();
 
         // sort components
 
         [UIComponent("sort")] public DropDownListSetting sort;
         [UIComponent("order")] public DropDownListSetting order;
-        [UIComponent("no-filters-text")] public LayoutElement noFiltersText;
+        [UIComponent("ranked")] public DropDownListSetting ranked;
+
+        // pp components
+
+        [UIComponent("filter-pp-minimum")] public SliderSetting filterPPMinimum;
+        [UIComponent("filter-pp-maximum")] public SliderSetting filterPPMaximum;
 
         // star components
 
@@ -77,13 +93,7 @@ namespace ScoreList.UI {
         [UIComponent("filter-accuracy-minimum")] public SliderSetting filterAccuracyMinimum;
         [UIComponent("filter-accuracy-maximum")] public SliderSetting filterAccuracyMaximum;
 
-
-        [UIAction("#post-parse")]
-        public void SetupUI() {
-            list.data.Clear();
-        }
-
-        internal void ToggleNoFiltersText(bool value) => noFiltersText.gameObject.SetActive(value);
+        public void ToggleNoFiltersText(bool value) => noFiltersText.gameObject.SetActive(value);
 
         // main functions
 
@@ -94,23 +104,49 @@ namespace ScoreList.UI {
             {
                 Order = (string)order.Value,
                 SortBy = (string)sort.Value,
-                Filters = filters
+                Filters = filters,
+                Ranked = (string)ranked.Value == "Ranked"
             };
             
             ScoreListCoordinator.Instance.ShowFilteredScores(query);
         }
 
         [UIAction("FilterSelect")]
-        internal void FilterSelect(object _, int index) => filterChoice = _filterChoices[index];
+        internal void FilterSelect(object _, int index) => filterChoice = (string)filterChoices[index];
+
+        [UIAction("TypeChanged")]
+        internal void TypeChanged(string type)
+        {
+            starsTab.IsVisible = type == "Ranked";
+            accuracyTab.IsVisible = type == "Ranked";
+            ppTab.IsVisible = type == "Ranked";
+
+            if (type == "Ranked") sortChoices.AddRange(new[] { "PP", "Stars", "Accuracy" });
+            else sortChoices.RemoveRange(new object[] { "PP", "Stars", "Accuracy" });
+
+            sort.values = sortChoices;
+            sort.UpdateChoices();
+
+            // clear filters, TODO: figure out a better way to clear opposite filters
+            filters.Clear();
+            list.data.Clear();
+            list.tableView.ReloadData();
+        }
 
         [UIAction("ResetFilters")]
         internal void ResetFilters() {
             filters.Clear();
             list.data.Clear();
             list.tableView.ReloadData();
+            
+            if ((string)ranked.Value == "Ranked") sortChoices.AddRange(new[] { "PP", "Stars", "Accuracy" });
+            else sortChoices.RemoveRange(new object[] { "PP", "Stars", "Accuracy" });
 
             sort.Value = "PP";
             order.Value = "DESC";
+            ranked.Value = "Ranked";
+            sort.values = sortChoices;
+            sort.UpdateChoices();
 
             ToggleNoFiltersText(true);
         }
@@ -129,18 +165,29 @@ namespace ScoreList.UI {
                         return new StarsFilter(starsMinimum, starsMaximum);
                     break;
 
+                case "PP":
+                    int? ppMaximum = null;
+                    if ((int)filterPPMaximum.Value != maxPP) ppMaximum = (int)filterPPMaximum.Value;
+
+                    int? ppMinimum = null;
+                    if ((int)filterPPMinimum.Value != 0) ppMinimum = (int)filterPPMinimum.Value;
+
+                    if (ppMaximum != null || ppMinimum != null)
+                        return new PPFilter(ppMinimum, ppMaximum);
+                    break;
+
                 case "Date":
                     int? dateAfterMonth = null;
                     int? dateAfterYear = null;
 
-                    if (filterDateAfterMonth.Value != 1) dateAfterMonth = (int)filterDateAfterMonth.Value;
-                    if (filterDateAfterYear.Value != 2018) dateAfterYear = (int)filterDateAfterYear.Value;
+                    if ((int)filterDateAfterMonth.Value != 1) dateAfterMonth = (int)filterDateAfterMonth.Value;
+                    if ((int)filterDateAfterYear.Value != 2018) dateAfterYear = (int)filterDateAfterYear.Value;
 
                     int? dateBeforeMonth = null;
                     int? dateBeforeYear = null;
 
-                    if (filterDateBeforeMonth.Value != 12) dateBeforeMonth = (int)filterDateBeforeMonth.Value;
-                    if (filterDateBeforeYear.Value != maxYear) dateBeforeYear = (int)filterDateBeforeYear.Value;
+                    if ((int)filterDateBeforeMonth.Value != 12) dateBeforeMonth = (int)filterDateBeforeMonth.Value;
+                    if ((int)filterDateBeforeYear.Value != maxYear) dateBeforeYear = (int)filterDateBeforeYear.Value;
 
                     string after = null;
                     if (dateAfterMonth != null || dateAfterYear != null)
@@ -156,7 +203,7 @@ namespace ScoreList.UI {
 
                 case "Misses":
                     int? missesMaximum = null;
-                    if (filterMissesMaximum.Value != 100) missesMaximum = (int)filterMissesMaximum.Value;
+                    if ((int)filterMissesMaximum.Value != 100) missesMaximum = (int)filterMissesMaximum.Value;
 
                     int? missesMinimum = null;
                     if (filterMissesMinimum.Value != 0) missesMinimum = (int)filterMissesMinimum.Value;
@@ -188,14 +235,7 @@ namespace ScoreList.UI {
             var filter = TryCreateFilter();
             if (filter == null) return;
 
-            var (start, end) = filter.GetValues();
-            string value;
-
-            if (start != null && end == null) value = $"Bigger {start}";
-            else if (start == null && end != null) value = $"Smaller {end}";
-            else value = $"Bigger {start} Smaller {end}";
-
-            var wrapper = new FilterListCellWrapper(this, filterChoice, value);
+            var wrapper = new FilterListCellWrapper(this, filterChoice, filter.Display());
 
             filters.Add(filter);
             list.data.Add(wrapper);
@@ -206,37 +246,34 @@ namespace ScoreList.UI {
 
         // choice
 
-        [UIValue("filter-choice")]
-        public string filterChoice = "Stars";
+        [UIValue("filter-choice")] public string filterChoice = "Stars";
 
         // choices
 
         [UIValue("order-choices")]
-        public List<object> orderChoices = new List<object> {
-            "DESC", "ASC"
-        };
+        public List<object> orderChoices = new List<object> { "DESC", "ASC" };
+
+        [UIValue("ranked-choices")]
+        public List<object> rankedChoices => new List<object> { "Ranked", "Unranked" };
 
         [UIValue("sort-choices")]
         public List<object> sortChoices = new List<object> {
+            "Rank",
+            "TimeSet",
+            "MissedNotes",
             "PP",
             "Stars",
-            "Rank",
             "Accuracy",
-            "TimeSet",
-            "MissedNotes"
         };
 
-        public List<string> _filterChoices = new List<string> {
+        [UIValue("filter-choices")]
+        public List<object> filterChoices => new List<object> {
             "Stars",
+            "PP",
             "Accuracy",
             "Misses",
             "Date"
         };
-
-        [UIValue("filter-choices")]
-        public List<object> filterChoices => _filterChoices.Cast<object>().ToList();
-
-        // formatters
 
         public List<string> monthChoices = new List<string> {
             "January ", "February", "March",
@@ -245,24 +282,18 @@ namespace ScoreList.UI {
             "October",  "November", "December"
         };
 
+        // formatters
+
         [UIAction("FormatMonth")]
         internal string FormatMonth(int index) => monthChoices[index - 1];
 
         // utils
 
-        [UIValue("max-year")]
-        public int maxYear = DateTime.Today.Year;
-
-        [UIValue("max-month")]
-        public int maxMonth = 12;
-
-        [UIValue("max-stars")]
-        public float maxStars = 14f;
-
-        [UIValue("max-accuracy")]
-        public int maxAccuracy = 100;
-
-        [UIValue("max-misses")]
-        public int maxMisses= 100;
+        [UIValue("max-year")] public int maxYear = DateTime.Today.Year;
+        [UIValue("max-month")] public int maxMonth = 12;
+        [UIValue("max-stars")] public float maxStars = 14f;
+        [UIValue("max-accuracy")] public int maxAccuracy = 100;
+        [UIValue("max-misses")] public int maxMisses = 100;
+        [UIValue("max-pp")] public int maxPP;
     }
 }
