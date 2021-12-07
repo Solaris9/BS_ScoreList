@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ScoreList.Scores 
 {
-    public enum Modifers
+    public enum Modifiers
     {
         NF = 1,
         OL = 2,
@@ -22,13 +23,31 @@ namespace ScoreList.Scores
         SF = 16384
     }
     
-    public class SongUtils
+    public static class SongUtils
     {
-        //TODO: Rewrite the bitmapping to use the new enum.
-        public static int ParseModifiers(string value) => 0;
-        
-        //TODO: Rewrite this to use the new enum
-        public static List<string> FormatModifiers(int bitfield) => null;
+        public static int ParseModifiers(string value) {
+            if (value.Equals("")) return 0;
+
+            int bitfield = 0;
+            string[] modifiers = value.Split(',');
+
+            foreach (string modifier in modifiers) {
+                var modifierBits = (int) Enum.Parse(typeof(Modifiers), modifier);
+                if ((bitfield & modifierBits) != modifierBits) {
+                    bitfield += modifierBits;
+                }
+            }
+
+            return bitfield;
+        }
+
+        public static List<string> FormatModifiers(int bitfield) =>
+            Enum.GetNames(typeof(Modifiers))
+                .Where(name => {
+                    var bit = (int) Enum.Parse(typeof(Modifiers), name);
+                    return (bitfield & bit) == bit;
+                })
+                .ToList();
 
         public static string GetDifficultyDisplay(int diff)
         {
