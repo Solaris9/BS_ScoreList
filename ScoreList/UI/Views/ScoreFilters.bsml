@@ -1,5 +1,5 @@
 ﻿<vertical>
-	<modal click-off-closes='true' show-event='ShowFilters' hide-event='HideFilters' size-delta-x='110' size-delta-y='60' bg='panel-top'>
+	<modal click-off-closes='true' show-event='ShowFilters' hide-event='HideFilters' size-delta-x='110' size-delta-y='65' bg='panel-top'>
 		<vertical pad-top='-6'>
 			<vertical pad-top='5' pad-bottom='15'>
 				<vertical bg='panel-top-gradient' vertical-fit='PreferredSize' pad-left='15' pad-right='15'>
@@ -9,22 +9,25 @@
 
 				<horizontal vertical-fit='PreferredSize' pref-height='6' spacing='4'>
 					<tab-selector tab-tag='filters' select-cell='FilterSelect'/>
-					<horizontal>
-						<button text='Add'   click-event='HideFilters' on-click='CreateFilter'/>
-						<button text='Close' click-event='HideFilters'/>
-					</horizontal>
 				</horizontal>
 			</vertical>
 
 			<vertical pad-bottom='15'>
-				<tab tags='filters' tab-name='Stars'>
+				<tab id='stars-tab' tags='filters' tab-name='Stars'>
 					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
 						<slider-setting id='filter-stars-minimum' text='Minimum amount of stars' increment='0.5' min='0' max='14' integer-only='false'/>
 						<slider-setting id='filter-stars-maximum' text='Maximum amount of stars' increment='0.5' min='0' max='14' integer-only='false' value='max-stars'/>
 					</vertical>
 				</tab>
+				
+				<tab id='pp-tab' tags='filters' tab-name='PP'>
+					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
+						<slider-setting id='filter-pp-minimum' text='Minimum amount of PP' increment='10' min='0' max='~max-pp' integer-only='true'/>
+						<slider-setting id='filter-pp-maximum' text='Maximum amount of PP' increment='10' min='0' max='~max-pp' integer-only='true' value='max-pp'/>
+					</vertical>
+				</tab>
 
-				<tab tags='filters' tab-name='Accuracy'>
+				<tab id='accuracy-tab' tags='filters' tab-name='Accuracy'>
 					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
 						<slider-setting id='filter-accuracy-minimum' text='Minimum accuracy' increment='1' min='0.0' max='100' integer-only='true'/>
 						<slider-setting id='filter-accuracy-maximum' text='Maximum accuracy' increment='1' min='0.0' max='100' integer-only='true' value='max-accuracy'/>
@@ -58,12 +61,18 @@
 					</horizontal>
 				</tab>
 			</vertical>
+			
+			<horizontal horizontal-fit='PreferredSize' spacing='2'>
+				<button text='Add'   click-event='HideFilters' on-click='CreateFilter'/>
+				<button text='Close' click-event='HideFilters'/>
+			</horizontal>
 		</vertical>
 	</modal>
 	
 	<vertical bg='panel-top' vertical-fit='PreferredSize' pad-left='4' pad-right='4' >
-		<dropdown-list-setting id='sort'  text='Sort'  choices='sort-choices' />
-		<dropdown-list-setting id='order' text='Order' choices='order-choices' />
+		<dropdown-list-setting id='sort'   text='Sort'     choices='sort-choices' />
+		<dropdown-list-setting id='order'  text='Order'    choices='order-choices' />
+		<dropdown-list-setting id='ranked' text='Score by' choices='ranked-choices' on-change='TypeChanged' />
 	</vertical>
 
 	<vertical pad='3' pad-left='3' pad-right='3' horizontal-fit='Unconstrained'>

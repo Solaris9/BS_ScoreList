@@ -54,27 +54,27 @@ namespace ScoreList.Scores {
         public override string Name => "Stars";
         public override bool RequiresJoin => true;
 
-        private readonly float? start;
-        private readonly float? end;
+        private readonly float? _start;
+        private readonly float? _end;
 
         public StarsFilter(float? start, float? end)
         {
-            this.start = start;
-            this.end = end;
+            this._start = start;
+            this._end = end;
         }
 
         public override string Display()
         {
-            if (start != null && end == null) return $"Bigger than {start} stars";
-            if (start == null && end != null) return $"Smaller than {end} stars";
-            return $"Between {start} and {end} stars";
+            if (_start != null && _end == null) return $"Bigger than {_start} stars";
+            if (_start == null && _end != null) return $"Smaller than {_end} stars";
+            return $"Between {_start} and {_end} stars";
         }
 
         public override string ToString()
         {
-            if (start != null && end == null) return $"leaderboards.Stars > {start}";
-            else if (start == null && end != null) return $"leaderboards.Stars < {end}";
-            return $"leaderboards.Stars BETWEEN {start} AND {end}";
+            if (_start != null && _end == null) return $"leaderboards.Stars > {_start}";
+            else if (_start == null && _end != null) return $"leaderboards.Stars < {_end}";
+            return $"leaderboards.Stars BETWEEN {_start} AND {_end}";
         }
     }
 
@@ -83,27 +83,27 @@ namespace ScoreList.Scores {
         public override string Name => "Date";
         public override bool RequiresJoin => false;
 
-        private readonly string start;
-        private readonly string end;
+        private readonly string _start;
+        private readonly string _end;
 
         public DateFilter(string start, string end)
         {
-            this.start = start;
-            this.end = end;
+            this._start = start;
+            this._end = end;
         }
 
         public override string Display()
         {
-            if (start != null && end == null) return $"Newer than {start}";
-            if (start == null && end != null) return $"Older than {end}";
-            return $"Between {start} and {end}";
+            if (_start != null && _end == null) return $"Newer than {_start}";
+            if (_start == null && _end != null) return $"Older than {_end}";
+            return $"Between {_start} and {_end}";
         }
 
         public override string ToString()
         {
-            if (start != null && end == null) return $"scores.TimeSet > {start}";
-            else if (start == null && end != null) return $"scores.TimeSet < {end}";
-            return $"scores.TimeSet BETWEEN {start} AND {end}";
+            if (_start != null && _end == null) return $"scores.TimeSet > {_start}";
+            else if (_start == null && _end != null) return $"scores.TimeSet < {_end}";
+            return $"scores.TimeSet BETWEEN {_start} AND {_end}";
         }
     }
 
@@ -112,27 +112,27 @@ namespace ScoreList.Scores {
         public override string Name => "Misses";
         public override bool RequiresJoin => false;
 
-        private readonly int? start;
-        private readonly int? end;
+        private readonly int? _start;
+        private readonly int? _end;
 
         public MissesFilter(int? start, int? end)
         {
-            this.start = start;
-            this.end = end;
+            this._start = start;
+            this._end = end;
         }
 
         public override string Display()
         {
-            if (start != null && end == null) return $"More than {start} misses";
-            if (start == null && end != null) return $"Smaller than {end} misses";
-            return $"Between {start} and {end} misses";
+            if (_start != null && _end == null) return $"More than {_start} misses";
+            if (_start == null && _end != null) return $"Smaller than {_end} misses";
+            return $"Between {_start} and {_end} misses";
         }
 
         public override string ToString()
         {
-            if (start != null && end == null) return $"scores.MissedNotes > {start}";
-            else if (start == null && end != null) return $"scores.MissedNotes < {end}";
-            return $"scores.MissedNotes BETWEEN {start} AND {end}";
+            if (_start != null && _end == null) return $"scores.MissedNotes > {_start}";
+            else if (_start == null && _end != null) return $"scores.MissedNotes < {_end}";
+            return $"scores.MissedNotes BETWEEN {_start} AND {_end}";
         }
     }
 
@@ -141,27 +141,27 @@ namespace ScoreList.Scores {
         public override string Name => "Accuracy";
         public override bool RequiresJoin => true;
 
-        private readonly float? start;
-        private readonly float? end;
+        private readonly float? _start;
+        private readonly float? _end;
 
         public AccuracyFilter(float? start, float? end)
         {
-            this.start = start;
-            this.end = end;
+            this._start = start;
+            this._end = end;
         }
 
         public override string Display()
         {
-            if (start != null && end == null) return $"Bigger than {(float)start:#.00}%";
-            if (start == null && end != null) return $"Smaller than {(float)end:#.00}%";
-            return $"Between {(float)start:#.00}% and {(float)end:#.00}%";
+            if (_start != null && _end == null) return $"Bigger than {(float)_start:#.00}%";
+            if (_start == null && _end != null) return $"Smaller than {(float)_end:#.00}%";
+            return $"Between {(float)_start:#.00}% and {(float)_end:#.00}%";
         }
 
         public override string ToString()
         {
-            if (start != null && end == null) return $"(100.0 * scores.BaseScore / leaderboards.MaxScore) > {start}";
-            if (start == null && end != null) return $"(100.0 * scores.BaseScore / leaderboards.MaxScore) < {end}";
-            return $"(100.0 * scores.BaseScore / leaderboards.MaxScore) BETWEEN {start} AND {end}";
+            if (_start != null && _end == null) return $"(100.0 * scores.BaseScore / leaderboards.MaxScore) > {_start}";
+            if (_start == null && _end != null) return $"(100.0 * scores.BaseScore / leaderboards.MaxScore) < {_end}";
+            return $"(100.0 * scores.BaseScore / leaderboards.MaxScore) BETWEEN {_start} AND {_end}";
         }
     }
 
@@ -170,27 +170,27 @@ namespace ScoreList.Scores {
         public override string Name => "PP";
         public override bool RequiresJoin => true;
 
-        private readonly int? start;
-        private readonly int? end;
+        private readonly int? _start;
+        private readonly int? _end;
 
         public PPFilter(int? start, int? end)
         {
-            this.start = start;
-            this.end = end;
+            this._start = start;
+            this._end = end;
         }
 
         public override string Display()
         {
-            if (start != null && end == null) return $"Bigger than {start} PP";
-            if (start == null && end != null) return $"Smaller than {end} PP";
-            return $"Between {start} and {end} PP";
+            if (_start != null && _end == null) return $"Bigger than {_start} PP";
+            if (_start == null && _end != null) return $"Smaller than {_end} PP";
+            return $"Between {_start} and {_end} PP";
         }
 
         public override string ToString()
         {
-            if (start != null && end == null) return $"scores.PP > {start}";
-            if (start == null && end != null) return $"scores.PP < {end}";
-            return $"scores.PP BETWEEN {start} AND {end}";
+            if (_start != null && _end == null) return $"scores.PP > {_start}";
+            if (_start == null && _end != null) return $"scores.PP < {_end}";
+            return $"scores.PP BETWEEN {_start} AND {_end}";
         }
     }
 }

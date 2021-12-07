@@ -9,8 +9,9 @@ namespace ScoreList.Scores
 {
     public abstract class Model<T>
     {
-        public static SQLiteClient SQLiteInstance;
-        public Task Save()
+        private static SQLiteClient SQLiteInstance;
+
+        protected Task Save()
         {
             if (SQLiteInstance == null) throw new Exception("Model is not initialized");
 
@@ -23,7 +24,7 @@ namespace ScoreList.Scores
             return command.ExecuteNonQueryAsync();
         }
 
-        public static async Task<T> Get(object key)
+        protected static async Task<T> Get(object key)
         {
             if (SQLiteInstance == null) throw new ArgumentException("Model has not been loaded yet");
             var type = typeof(T);
@@ -34,19 +35,19 @@ namespace ScoreList.Scores
             var tableName = tableAttr.Name ?? type.Name;
 
             var properties = type.GetProperties();
-            var primaryField = properties.Where(f => Attribute.GetCustomAttribute(f, typeof(PrimaryKey)) != null).First();
+            var primaryField = properties.First(f => Attribute.GetCustomAttribute((MemberInfo) f, typeof(PrimaryKey)) != null);
 
             var command = connection.CreateCommand();
 
-            var escapedKey = key.GetType() == typeof(string) ? $"\"{key}\"" : key;
+            var escapedKey = key is string ? $"\"{key}\"" : key;
             command.CommandText = $"SELECT * FROM {tableName} WHERE {primaryField.Name} = {escapedKey}";
 
             var reader = await command.ExecuteReaderAsync();
             var model = Activator.CreateInstance(type);
 
-            if (reader.HasRows && reader.Read())
+            if (reader.HasRows && await reader.ReadAsync())
             {
-                for (int i = 0; i < properties.Count(); i++)
+                for (var i = 0; i < properties.Count(); i++)
                 {
                     var readValue = reader.GetValue(i);
                     var prop = properties[i];
@@ -57,7 +58,7 @@ namespace ScoreList.Scores
                     type.GetProperty(properties[i].Name).SetValue(model, value, null);
                 }
             }
-            else return default(T);
+            else return default;
 
             return (T)model;
         }
@@ -66,7 +67,7 @@ namespace ScoreList.Scores
     [AttributeUsage(AttributeTargets.Class)]
     public class Table : Attribute
     {
-        public string Name;
+        public readonly string Name;
 
         public Table(string name)
         {
@@ -88,7 +89,7 @@ namespace ScoreList.Scores
 
     public class SQLiteClient
     {
-        private SQLiteConnection connection;
+        private readonly SQLiteConnection connection;
 
         public SQLiteClient(string path)
         {
@@ -235,12 +236,12 @@ namespace ScoreList.Scores
             return string.Format(query, tableName, string.Join(",", columns), string.Join(",", values));
         }
 
-        public static object SerializeValue(Type type, object value)
+        private static object SerializeValue(Type type, object value)
         {
             if (value == null) return null;
 
             if (type == typeof(DateTime)) return ((DateTime)value).ToString("\\\'yyyy-MM-dd\\\'");
-            if (type == typeof(DateTime?) && value != null) return ((DateTime)value).ToString("\\\'yyyy-MM-dd\\\'");
+            if (type == typeof(DateTime?)) return ((DateTime)value).ToString("\\\'yyyy-MM-dd\\\'");
             if (type == typeof(bool)) return (bool)value == true ? 1 : 0;
             if (type == typeof(string)) return $"'{((string)value).Replace("'", "''")}'";
 
@@ -249,7 +250,7 @@ namespace ScoreList.Scores
 
         public static object ReadColumn(object value, Type propertyType)
         {
-            if (value.GetType() == typeof(DBNull)) return null;
+            if (value is DBNull) return null;
             if (propertyType == typeof(bool)) return (long)value == 1;
 
             var intTypes = new Type[] { typeof(uint), typeof(long), typeof(ulong) };

@@ -57,7 +57,7 @@ namespace ScoreList.UI {
 
     [HotReload(RelativePathToLayout = @"Views\ScoreList.bsml")]
     [ViewDefinition("ScoreList.UI.Views.ScoreList.bsml")]
-    class ScoreViewController : BSMLAutomaticViewController {
+    public class ScoreViewController : BSMLAutomaticViewController {
         public event Action<LeaderboardScore> didSelectSong;
 
         [UIComponent("list")]

@@ -10,22 +10,22 @@ namespace ScoreList.UI {
     class ScoreListCoordinator : FlowCoordinator {
         public static ScoreListCoordinator Instance;
 
-        private FlowCoordinator parentFlowCoordinator;
-        private ScoreViewController scoreView;
-        private DetailViewController detailView;
-        private FilterViewController filterView;
+        private FlowCoordinator _parentFlowCoordinator;
+        private ScoreViewController _scoreView;
+        private DetailViewController _detailView;
+        private FilterViewController _filterView;
 
-        public void ShowFilteredScores(SearchQuery query) => scoreView.FilterScores(query);
+        public void ShowFilteredScores(SearchQuery query) => _scoreView.FilterScores(query);
 
         public void Awake()
         {
-            if (scoreView == null)
+            if (_scoreView == null)
             {
-                scoreView = BeatSaberUI.CreateViewController<ScoreViewController>();
-                detailView = BeatSaberUI.CreateViewController<DetailViewController>();
-                filterView = BeatSaberUI.CreateViewController<FilterViewController>();
+                _scoreView = BeatSaberUI.CreateViewController<ScoreViewController>();
+                _detailView = BeatSaberUI.CreateViewController<DetailViewController>();
+                _filterView = BeatSaberUI.CreateViewController<FilterViewController>();
 
-                scoreView.didSelectSong += HandleDidSelectSong;
+                _scoreView.didSelectSong += HandleDidSelectSong;
             }
         }
 
@@ -37,22 +37,22 @@ namespace ScoreList.UI {
                     SetTitle("ScoreList");
                     showBackButton = true;
 
-                    ProvideInitialViewControllers(scoreView, filterView, detailView);
+                    ProvideInitialViewControllers(_scoreView, _filterView, _detailView);
                 }
             } catch (Exception ex) {
                 Plugin.Log.Error(ex);
             }
         }
 
-        internal async void HandleDidSelectSong(LeaderboardScore score)
+        private async void HandleDidSelectSong(LeaderboardScore score)
         {
-            await detailView.Load(score);
+            await _detailView.Load(score);
         }
 
-        protected override void BackButtonWasPressed(ViewController topViewController) => 
-            parentFlowCoordinator.DismissFlowCoordinator(this);
+        protected override void BackButtonWasPressed(ViewController _) => 
+            _parentFlowCoordinator.DismissFlowCoordinator(this);
        
-        public void SetParentFlowCoordinator(FlowCoordinator parent) => parentFlowCoordinator = parent;
+        public void SetParentFlowCoordinator(FlowCoordinator parent) => _parentFlowCoordinator = parent;
     }
 
     class ScoreListUI : PersistentSingleton<ScoreListUI> {
