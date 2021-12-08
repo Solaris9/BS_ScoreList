@@ -23,10 +23,10 @@ namespace ScoreList.Scores {
             var query = "SELECT * FROM scores";
 
             var requiresJoin = Filters.Any(f => f.RequiresJoin) || new[] {"Stars", "Accuracy"}.Contains(SortBy);
-            if (Ranked == false || requiresJoin) 
+            if (Ranked || requiresJoin) 
                 query += "\nJOIN leaderboards\nWHERE scores.LeaderboardId = leaderboards.LeaderboardId";
 
-            if (Ranked == false) query += $"\nleaderboards.Ranked = {(Ranked ? 1 : 0)}";
+            if (Ranked) query += $"\nleaderboards.Ranked = {(Ranked ? 1 : 0)}";
 
             if (Filters.Count > 0)
             {

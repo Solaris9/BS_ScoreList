@@ -1,0 +1,6 @@
+﻿<horizontal>
+    <vertical>
+        <button id='cache-button' text='' on-click='CacheScores'/>
+        <text id='cache-status'/>
+    </vertical>
+</horizontal>

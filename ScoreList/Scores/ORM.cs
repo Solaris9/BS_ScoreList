@@ -24,7 +24,7 @@ namespace ScoreList.Scores
             return command.ExecuteNonQueryAsync();
         }
 
-        protected static async Task<T> Get(object key)
+        public static async Task<T> Get(object key)
         {
             if (SQLiteInstance == null) throw new ArgumentException("Model has not been loaded yet");
             var type = typeof(T);

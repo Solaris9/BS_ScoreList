@@ -1,10 +1,10 @@
 ﻿<vertical>
-	<page-button event-click='list#PageUp' direction='Up'></page-button>
+	<page-button event-click='list#PageUp' direction='Up'/>
 	<custom-list id='list' select-cell='SongSelect' list-width='100' cell-size='14' visible-cells='5'>
 		<horizontal bg='panel-top'>
 			<horizontal>
 				<vertical min-width='10' pad-left='2' pad-top='1'>
-					<text text='~stars' font-size='3'/>
+					<text id='stars' text='' font-size='3'/>
 					<text text='~difficulty' font-size='3'/>
 				</vertical>
 
@@ -18,7 +18,7 @@
 			</horizontal>
 
 			<vertical min-width='25' child-align='MiddleLeft'>
-				<horizontal horizontal-fit='PreferredSize' spacing='2'>
+				<horizontal id='pp-layout' active='false' horizontal-fit='PreferredSize' spacing='2'>
 					<text text='PP' font-size='2'/>
 					<horizontal>
 						<text text='~pp' font-size='2'/>
@@ -37,8 +37,8 @@
 					<text text='~missed-notes' font-size='2'/>
 				</horizontal>
 
-				<horizontal horizontal-fit='PreferredSize' spacing='2'>
-					<text text='Accruacy' font-size='2'/>
+				<horizontal id='accuracy-layout' active='false' horizontal-fit='PreferredSize' spacing='2'>
+					<text text='Accuracy' font-size='2'/>
 					<horizontal>
 						<text text='~accuracy' font-size='2'/>
 						<text text='% ' font-size='2'/>
@@ -47,5 +47,5 @@
 			</vertical>
 		</horizontal>
 	</custom-list>
-	<page-button event-click='list#PageDown' direction='Down'></page-button>
+	<page-button event-click='list#PageDown' direction='Down'/>
 </vertical>

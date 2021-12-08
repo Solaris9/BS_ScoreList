@@ -8,8 +8,10 @@ using UnityEngine.UI;
 using System.Linq;
 using System;
 using ScoreList.Utils;
+using Zenject;
 
-namespace ScoreList.UI {
+namespace ScoreList.UI
+{
     public class FilterListCellWrapper
     {
         private readonly FilterViewController controller;
@@ -42,11 +44,17 @@ namespace ScoreList.UI {
     [ViewDefinition("ScoreList.UI.Views.ScoreFilters.bsml")]
     public class FilterViewController : BSMLAutomaticViewController
     {
-        internal FilterViewController()
+        private SQLiteClient _db;
+
+        [Inject]
+        public FilterViewController(SQLiteClient db)
         {
+            _db = db;
+            
             var query = "SELECT * FROM scores ORDER BY scores.PP DESC LIMIT 1";
-            var score = DatabaseManager.Client.Query<LeaderboardScore>(query).GetAwaiter().GetResult();
-            maxPP = (int)score.First().PP;
+            var score = db.Query<LeaderboardScore>(query).GetAwaiter().GetResult();
+            
+            if (score.Count > 0) maxPP = (int)score.First().PP;
         }
         
         // components
@@ -275,14 +283,14 @@ namespace ScoreList.UI {
             "Date"
         };
 
+        // formatters
+
         public List<string> monthChoices = new List<string> {
             "January ", "February", "March",
             "April",    "May",      "June",
             "July",     "August",   "September",
             "October",  "November", "December"
         };
-
-        // formatters
 
         [UIAction("FormatMonth")]
         internal string FormatMonth(int index) => monthChoices[index - 1];

@@ -1,19 +1,16 @@
-﻿using System;
-using IPA;
+﻿using IPA;
 using ScoreList.UI;
 using System.IO;
 using IPA.Utilities;
-using IPALogger = IPA.Logging.Logger;
-using ScoreList.Scores;
 using SiraUtil.Zenject;
-using ScoreList.Installers;
+using IPALogger = IPA.Logging.Logger;
 
 namespace ScoreList
 {
     [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
-        public static string ModFolder = Path.Combine(UnityGame.UserDataPath, "ScoreList");
+        public static readonly string ModFolder = Path.Combine(UnityGame.UserDataPath, "ScoreList");
 
         internal static Plugin Instance { get; private set; }
         internal static IPALogger Log { get; private set; }
@@ -24,15 +21,16 @@ namespace ScoreList
         }
 
         [Init]
-        public async void Init(IPALogger logger, Zenjector zenjector)
+        public void Init(IPALogger logger, Zenjector zenjector)
         {
-            zenjector.OnGame<MenuInstallers>();
+            if (!Directory.Exists(ModFolder)) Directory.CreateDirectory(ModFolder);
+            
+            zenjector.OnApp<Installers.CoreInstallers>();
+            zenjector.OnGame<Installers.MenuInstallers>();
 
             Instance = this;
             Log = logger;
             Log.Info("ScoreList initialized.");
-            
-            await DatabaseManager.Connect();
         }
 
         [OnStart]

@@ -5,23 +5,6 @@ using ScoreList.Utils;
 
 namespace ScoreList.Scores
 {
-    public class DatabaseManager
-    {
-        public static SQLiteClient Client;
-
-        public static async Task Connect()
-        {
-            Client = new SQLiteClient(Path.Combine(Plugin.ModFolder, "scores.db"));
-            await Client.Connect();
-
-            await Client.CreateTable(
-                typeof(LeaderboardMapInfo),
-                typeof(LeaderboardInfo),
-                typeof(LeaderboardScore)
-            );
-        }
-    }
-
     [Table("scores")]
     public class LeaderboardScore : Model<LeaderboardScore>
     {

@@ -1,38 +1,32 @@
-﻿/*
-using System.Runtime.CompilerServices;
-using IPA.Config.Stores;
+﻿using System.IO;
+using Newtonsoft.Json;
 
-[assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace ScoreList.Configuration
 {
-    internal class PluginConfig
+    public class PluginConfig
     {
-        public static PluginConfig Instance { get; set; }
-        public virtual int IntValue { get; set; } = 42; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
+        private static readonly string _path = Path.Combine(Plugin.ModFolder, "config.json");
 
-        /// <summary>
-        /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
-        /// </summary>
-        public virtual void OnReload()
+        public bool Complete = false;
+        public int? MaxPages = null;
+        public int? LoadedPages = null;
+
+        public void Save()
         {
-            // Do stuff after config is read from disk.
+            var content = JsonConvert.SerializeObject(this);
+            File.WriteAllText(_path, content);
         }
-
-        /// <summary>
-        /// Call this to force BSIPA to update the config file. This is also called by BSIPA if it detects the file was modified.
-        /// </summary>
-        public virtual void Changed()
+        
+        public static PluginConfig Load()
         {
-            // Do stuff when the config is changed.
-        }
-
-        /// <summary>
-        /// Call this to have BSIPA copy the values from <paramref name="other"/> into this config.
-        /// </summary>
-        public virtual void CopyFrom(PluginConfig other)
-        {
-            // This instance's members populated from other
+            if (!File.Exists(_path))
+            {
+                File.Create(_path);
+                return new PluginConfig();
+            }
+            
+            var content = File.ReadAllText(_path);
+            return JsonConvert.DeserializeObject<PluginConfig>(content);
         }
     }
 }
-*/
