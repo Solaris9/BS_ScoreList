@@ -2,41 +2,41 @@
 using ScoreList.UI;
 using System.IO;
 using IPA.Utilities;
+using ScoreList.Scores;
 using SiraUtil.Zenject;
-using IPALogger = IPA.Logging.Logger;
+using ScoreList.Installers;
+using SiraUtil.Tools;
 
 namespace ScoreList
 {
-    [Plugin(RuntimeOptions.SingleStartInit)]
+    [Plugin(RuntimeOptions.DynamicInit)]
     public class Plugin
     {
-        public static readonly string ModFolder = Path.Combine(UnityGame.UserDataPath, "ScoreList");
+        public static string ModFolder = Path.Combine(UnityGame.UserDataPath, "ScoreList");
 
-        internal static Plugin Instance { get; private set; }
-        internal static IPALogger Log { get; private set; }
+        private static Plugin Instance { get; set; }
+        private static SiraLog _siraLog { get; set; }
 
-        public Plugin()
+        public Plugin(SiraLog siraLog)
         {
-            
+            _siraLog = siraLog;
         }
 
         [Init]
-        public void Init(IPALogger logger, Zenjector zenjector)
+        public async void Init(SiraLog logger, Zenjector zenjector)
         {
-            if (!Directory.Exists(ModFolder)) Directory.CreateDirectory(ModFolder);
-            
-            zenjector.OnApp<Installers.CoreInstallers>();
-            zenjector.OnGame<Installers.MenuInstallers>();
+            zenjector.OnGame<MenuInstallers>();
 
             Instance = this;
-            Log = logger;
-            Log.Info("ScoreList initialized.");
+            _siraLog.Info("ScoreList initialized.");
+            
+            await DatabaseManager.Connect();
         }
 
         [OnStart]
         public void OnApplicationStart()
         {
-            ScoreListUI.instance.Setup();
+            ScoreListUI.Setup();
 
             // DownloadImages();
         }
