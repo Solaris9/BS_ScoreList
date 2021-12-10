@@ -11,7 +11,7 @@ namespace ScoreList.Scores
     {
         private static LeaderboardData _data;
         
-        private readonly string _filePath = Path.Combine(Directory.GetCurrentDirectory(), "data.json");
+        private readonly string _filePath = Path.Combine(Plugin.ModFolder, "data.json");
 
         public async Task InsertScores(params LeaderboardScore[] scores)
         {
@@ -80,6 +80,12 @@ namespace ScoreList.Scores
         }
 
         public void Clean() => _data = null;
+
+        public async Task<LeaderboardScore> GetScore(int id)
+        {
+            if (_data == null) _data = await Read();
+            return _data.Scores.First(s => s.ScoreId == id);
+        }
 
         public async Task<LeaderboardMapInfo> GetMapInfo(string hash)
         {

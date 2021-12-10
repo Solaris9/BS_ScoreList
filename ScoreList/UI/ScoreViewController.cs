@@ -4,6 +4,7 @@ using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using ScoreList.Scores;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using ScoreList.Configuration;
 using TMPro;
@@ -13,8 +14,8 @@ using Zenject;
 namespace ScoreList.UI {
     public class ScoreInfoCellWrapper
     {
-        public LeaderboardScore score;
-
+        public int ScoreId;
+        
         [UIValue("icon")] public string icon;
 
         [UIValue("title")] public string title;
@@ -27,20 +28,17 @@ namespace ScoreList.UI {
         [UIValue("difficulty")] public string difficulty;
 
         [UIComponent("stars")] public TextMeshProUGUI stars;
-        
+
         [UIComponent("accuracy-layout")] public LayoutElement accuracyLayout;
         [UIComponent("pp-layout")] public LayoutElement ppLayout;
-        
+
         [UIValue("accuracy")] public string accuracy;
         [UIValue("max-pp")] public string maxPP;
         [UIValue("pp")] public string pp;
 
-        public ScoreInfoCellWrapper(LeaderboardScore score)
+        public ScoreInfoCellWrapper(LeaderboardScore score, LeaderboardInfo leaderboard, LeaderboardMapInfo info)
         {
-            this.score = score;
-            var leaderboard = score.GetLeaderboard().GetAwaiter().GetResult();
-            var info = score.GetMapInfo().GetAwaiter().GetResult();
-
+            ScoreId = score.ScoreId;
             icon = Path.Combine(Plugin.ModFolder, "icons", info.SongHash);
 
             title = info.SongName;
@@ -58,7 +56,7 @@ namespace ScoreList.UI {
             {
                 ppLayout.enabled = true;
                 accuracyLayout.enabled = true;
-                
+
                 stars.text = leaderboard.Stars.ToString("#.00★");
                 accuracy = (100f * score.BaseScore / leaderboard.MaxScore).ToString("0.##");
                 maxPP = leaderboard.MaxPP.ToString("#.00");
@@ -74,14 +72,14 @@ namespace ScoreList.UI {
     [HotReload(RelativePathToLayout = @"Views\ScoreList.bsml")]
     [ViewDefinition("ScoreList.UI.Views.ScoreList.bsml")]
     public class ScoreViewController : BSMLAutomaticViewController {
-        public event Action<LeaderboardScore> didSelectSong;
-        private SQLiteClient _db;
+        public event Action<int> didSelectSong;
+        private ScoreManager _scoresManager;
         private PluginConfig _config;
 
         [Inject]
-        public ScoreViewController(SQLiteClient db, PluginConfig config)
+        public ScoreViewController(ScoreManager scoresManager, PluginConfig config)
         {
-            _db = db;
+            _scoresManager = scoresManager;
             _config = config;
         }
 
@@ -92,30 +90,35 @@ namespace ScoreList.UI {
         internal void SetupUI()
         {
             if (!_config.Complete) return;
-            
-            var query = new SearchQuery {
-                SortBy = "PP",
-                Order = "DESC"
+
+            var filters = new List<BaseFilter>
+            {
+                new SortPpFilter(),
+                new OrderFilter("DESC")
             };
 
-            FilterScores(query);
+            FilterScores(filters);
         }
 
         [UIAction("SongSelect")]
-        public void SongSelect(TableView _, object song) => didSelectSong?.Invoke(((ScoreInfoCellWrapper)song).score);
+        public void SongSelect(TableView _, object song) => didSelectSong?.Invoke(((ScoreInfoCellWrapper)song).ScoreId);
 
-        public async void FilterScores(SearchQuery query) {
+        public async void FilterScores(List<BaseFilter> filters) {
             scoreList.data.Clear();
 
-            var scores = await _db.Query<LeaderboardScore>(query.ToString());
+            var scores = await _scoresManager.Query(filters);
             if (scores.Count == 0) return;
 
-            foreach (var score in scores) {
-                var scoreCell = new ScoreInfoCellWrapper(score);
+            foreach (var score in scores)
+            {
+                var leaderboard = await _scoresManager.GetLeaderboard(score.LeaderboardId);
+                var map = await _scoresManager.GetMapInfo(leaderboard.SongHash);
+                
+                var scoreCell = new ScoreInfoCellWrapper(score, leaderboard, map);
                 scoreList.data.Add(scoreCell);
             }
 
-            didSelectSong?.Invoke(((ScoreInfoCellWrapper)scoreList.data[0]).score);
+            didSelectSong?.Invoke(((ScoreInfoCellWrapper)scoreList.data[0]).ScoreId);
             scoreList.tableView.ReloadData();
         }
     }

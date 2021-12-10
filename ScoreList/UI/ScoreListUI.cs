@@ -4,6 +4,7 @@ using HMUI;
 using IPA.Utilities;
 using ScoreList.Scores;
 using System;
+using System.Collections.Generic;
 using SiraUtil.Logging;
 using Zenject;
 
@@ -11,20 +12,22 @@ namespace ScoreList.UI {
     class ScoreListCoordinator : FlowCoordinator {
         public static ScoreListCoordinator Instance;
 
-        [Inject] 
+        [Inject]
         private readonly SiraLog _siraLog;
+        private readonly ScoreManager _scoreManager;
 
         private FlowCoordinator _parentFlowCoordinator;
         private ScoreViewController _scoreView;
         private DetailViewController _detailView;
         private FilterViewController _filterView;
 
-        public ScoreListCoordinator(SiraLog siraLog)
+        public ScoreListCoordinator(SiraLog siraLog, ScoreManager scoreManager)
         {
             _siraLog = siraLog;
+            _scoreManager = scoreManager;
         }
 
-        public void ShowFilteredScores(SearchQuery query) => _scoreView.FilterScores(query);
+        public void ShowFilteredScores(List<BaseFilter> filters) => _scoreView.FilterScores(filters);
 
         public void Awake()
         {
@@ -53,8 +56,9 @@ namespace ScoreList.UI {
             }
         }
 
-        private async void HandleDidSelectSong(LeaderboardScore score)
+        private async void HandleDidSelectSong(int scoreId)
         {
+            var score = await _scoreManager.GetScore(scoreId);
             await _detailView.Load(score);
         }
 
@@ -65,11 +69,11 @@ namespace ScoreList.UI {
     }
 
     class ScoreListUI : PersistentSingleton<ScoreListUI> {
-        public MenuButton scoreListMenuButton;
+        public MainMenuViewController.MenuButton scoreListMenuButton;
         internal ScoreListCoordinator scoreListFlowCooridinator;
 
         internal void Setup() {
-            scoreListMenuButton = new MenuButton("ScoreList", "Sort and filter all your scores to view your best and worst!", ScoreListMenuButtonPressed, true);
+            scoreListMenuButton = new MainMenuViewController.MenuButton("ScoreList", "Sort and filter all your scores to view your best and worst!", ScoreListMenuButtonPressed, true);
             MenuButtons.instance.RegisterButton(scoreListMenuButton);
         }
 

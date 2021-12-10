@@ -170,7 +170,7 @@
     <Compile Include="Downloaders\ScoreSaberDownloader.cs" />
     <Compile Include="Installers\CoreInstallers.cs" />
     <Compile Include="Installers\MenuInstallers.cs" />
-    <Compile Include="Scores\Database.cs" />
+    <Compile Include="Scores\ScoreManager.cs" />
     <Compile Include="Scores\Filters.cs" />
     <Compile Include="Scores\Utils.cs" />
     <Compile Include="Plugin.cs" />
