@@ -5,6 +5,7 @@ using IPA.Utilities;
 using ScoreList.Scores;
 using SiraUtil.Zenject;
 using ScoreList.Installers;
+using SiraUtil.Logging;
 using SiraUtil.Tools;
 
 namespace ScoreList
@@ -25,7 +26,7 @@ namespace ScoreList
         [Init]
         public async void Init(SiraLog logger, Zenjector zenjector)
         {
-            zenjector.OnGame<MenuInstallers>();
+            zenjector.Install<MenuInstallers>(Location.Menu);
 
             Instance = this;
             _siraLog.Info("ScoreList initialized.");
@@ -36,8 +37,6 @@ namespace ScoreList
         [OnStart]
         public void OnApplicationStart()
         {
-            ScoreListUI.Setup();
-
             // DownloadImages();
         }
     }

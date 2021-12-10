@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using ScoreList.Utils;
+using SiraUtil.Logging;
 using SiraUtil.Tools;
 using UnityEngine;
 
@@ -11,23 +12,34 @@ namespace ScoreList.Downloaders
     public class ScoreSaberDownloader : Downloader
     {
         private const string API_URL = "https://scoresaber.com/api/";
+        private const string PLAYER = "player/";
+        private const string SCORES = "scores";
+
         private const string CDN_URL = "https://cdn.scoresaber.com/";
         private const string COVERS = "covers/";
 
         private static Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
         
         private readonly SiraLog _siraLog;
+        private readonly IPlatformUserModel _user;
         
-        public ScoreSaberDownloader(SiraLog siraLog) : base(siraLog)
+        public ScoreSaberDownloader(SiraLog siraLog, IPlatformUserModel user) : base(siraLog)
         {
             _siraLog = siraLog;
+            _user = user;
         }
 
-        public async Task<List<ScoreSaberUtils.ScoreSaberLeaderboardEntry>> FetchScores(
-            string id, int page, CancellationToken cancellationToken, string sort = "top"
-        )
+        private int GetUserID()
         {
-            var url = $"https://scoresaber.com/api/player/{id}/scores?limit=100&sort={sort}&page={page}";
+            var userID = _user.GetUserInfo().Id;
+            return userID;
+        }
+
+        public async Task<List<ScoreSaberUtils.ScoreSaberLeaderboardEntry>> GetScores(int id, CancellationToken cancellationToken)
+        {
+            id = GetUserID();
+            
+            string url = API_URL + PLAYER + id;
             return await MakeJsonRequestAsync<List<ScoreSaberUtils.ScoreSaberLeaderboardEntry>>(url, cancellationToken);
         }
 

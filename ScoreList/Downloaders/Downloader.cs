@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using IPA.Loader;
 using Newtonsoft.Json;
 using ScoreList.Utils;
+using SiraUtil.Logging;
 using SiraUtil.Tools;
 using SiraUtil.Zenject;
 using UnityEngine;
@@ -62,7 +63,7 @@ namespace ScoreList.Downloaders
             }
             catch (Exception e)
             {
-                _siraLog.Warning($"Error parsing response: {e.Message}");
+                _siraLog.Warn($"Error parsing response: {e.Message}");
                 return default(T);
             }
         }
@@ -83,7 +84,7 @@ namespace ScoreList.Downloaders
             }
             catch (Exception e)
             {
-                _siraLog.Warning($"Error parsing image: {e.Message}");
+                _siraLog.Warn($"Error parsing image: {e.Message}");
                 return null;
             }
         }
@@ -116,7 +117,7 @@ namespace ScoreList.Downloaders
 
             if (www.isNetworkError || www.isHttpError)
             {
-                _siraLog.Warning($"Error making request: {www.error}");
+                _siraLog.Warn($"Error making request: {www.error}");
                 return null;
             }
 

@@ -1,18 +1,28 @@
 ﻿using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.MenuButtons;
 using HMUI;
+using IPA.Utilities;
 using ScoreList.Scores;
 using System;
+using SiraUtil.Logging;
+using Zenject;
 
 namespace ScoreList.UI {
     class ScoreListCoordinator : FlowCoordinator {
         public static ScoreListCoordinator Instance;
 
+        [Inject] 
+        private readonly SiraLog _siraLog;
+
         private FlowCoordinator _parentFlowCoordinator;
         private ScoreViewController _scoreView;
         private DetailViewController _detailView;
         private FilterViewController _filterView;
-        private ConfigViewController _configView;
+
+        public ScoreListCoordinator(SiraLog siraLog)
+        {
+            _siraLog = siraLog;
+        }
 
         public void ShowFilteredScores(SearchQuery query) => _scoreView.FilterScores(query);
 
@@ -23,7 +33,6 @@ namespace ScoreList.UI {
                 _scoreView = BeatSaberUI.CreateViewController<ScoreViewController>();
                 _detailView = BeatSaberUI.CreateViewController<DetailViewController>();
                 _filterView = BeatSaberUI.CreateViewController<FilterViewController>();
-                _configView = BeatSaberUI.CreateViewController<ConfigViewController>();
 
                 _scoreView.didSelectSong += HandleDidSelectSong;
             }
@@ -37,15 +46,10 @@ namespace ScoreList.UI {
                     SetTitle("ScoreList");
                     showBackButton = true;
 
-                    ProvideInitialViewControllers(
-                        _scoreView,
-                        _filterView,
-                        _detailView,
-                        _configView
-                    );
+                    ProvideInitialViewControllers(_scoreView, _filterView, _detailView);
                 }
             } catch (Exception ex) {
-                Plugin.Log.Error(ex);
+                _siraLog.Error(ex);
             }
         }
 

@@ -10,6 +10,7 @@ using UnityEngine;
 using TMPro;
 using BeatSaberMarkupLanguage;
 using System.Linq;
+using SiraUtil.Logging;
 using SiraUtil.Tools;
 
 namespace ScoreList.UI
@@ -20,7 +21,7 @@ namespace ScoreList.UI
     {
         private readonly MenuTransitionsHelper menuTransitionsHelper;
         private readonly BeatmapLevelsModel beatmapLevelsModel;
-        private readonly BeatSaver beatsaver;
+        private readonly BeatSaver _beatsaver;
         private readonly SiraLog _siraLog;
 
         private bool canPlay = true;
