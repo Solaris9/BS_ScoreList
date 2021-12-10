@@ -172,7 +172,6 @@
     <Compile Include="Installers\MenuInstallers.cs" />
     <Compile Include="Scores\Database.cs" />
     <Compile Include="Scores\Filters.cs" />
-    <Compile Include="Scores\ORM.cs" />
     <Compile Include="Scores\Utils.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />

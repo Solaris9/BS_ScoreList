@@ -16,16 +16,18 @@ namespace ScoreList.Utils
             public Sprite sprite;
             public string downloadURL;
         }
-
-        public class ScoreSaberProfile
+        
+        public class ScoreSaberScores
         {
-            [JsonProperty("scoreStats")] public ScoreSaberProfileStats ScoreStats;
+            [JsonProperty("playerScores")] public List<ScoreSaberLeaderboardEntry> PlayerScores;
+            [JsonProperty("metadata")] public ScoreSaberScoresMetadata Metadata;
         }
 
-        public class ScoreSaberProfileStats
+        public class ScoreSaberScoresMetadata
         {
-            [JsonProperty("totalPlayCount")] public int TotalPlayCount;
-            [JsonProperty("rankedPlayCount")] public int RankedPlayCount;
+            [JsonProperty("total")] public int Total;
+            [JsonProperty("page")] public int Page;
+            [JsonProperty("itemsPerPage")] public int ItemsPerPage;
         }
 
         public class ScoreSaberLeaderboardEntry
