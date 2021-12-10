@@ -26,18 +26,15 @@ namespace ScoreList
         [Init]
         public async void Init(SiraLog logger, Zenjector zenjector)
         {
+            _siraLog.Info("Initializing ScoreList..");
             zenjector.Install<MenuInstallers>(Location.Menu);
 
             Instance = this;
-            _siraLog.Info("ScoreList initialized.");
-            
-            await DatabaseManager.Connect();
         }
 
         [OnStart]
         public void OnApplicationStart()
         {
-            // DownloadImages();
         }
     }
 }

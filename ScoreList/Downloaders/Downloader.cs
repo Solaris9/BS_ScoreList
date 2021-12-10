@@ -16,14 +16,14 @@ namespace ScoreList.Downloaders
     {
         internal string USER_AGENT { get; set; }
         internal ConcurrentHashSet<UnityWebRequest> _ongoingWebRequests = new ConcurrentHashSet<UnityWebRequest>();
-        internal readonly UBinder<Plugin, PluginMetadata> _metadata;
+        internal readonly PluginMetadata _metadata;
         private readonly SiraLog _siraLog;
 
-        public Downloader(UBinder<Plugin, PluginMetadata> metadata, SiraLog siraLog)
+        public Downloader(PluginMetadata metadata, SiraLog siraLog)
         {
             _metadata = metadata;
             _siraLog = siraLog;
-            USER_AGENT = $"SongList/v{_metadata.Value.HVersion}";
+            USER_AGENT = $"SongList/v{_metadata.HVersion}";
         }
 
         protected Downloader(SiraLog siraLog)
