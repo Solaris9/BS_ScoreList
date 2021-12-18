@@ -8,41 +8,40 @@ using UnityEngine.UI;
 using System.Linq;
 using System;
 using ScoreList.Utils;
-using UnityEngine;
 using Zenject;
 
 namespace ScoreList.UI
 {
     public class FilterListCellWrapper
     {
-        private readonly FilterViewController controller;
+        private readonly FilterViewController _controller;
 
-        [UIValue("name")] private readonly string name;
+        [UIValue("name")] private readonly string _name;
 
-        [UIValue("data")] private readonly string data;
+        [UIValue("data")] private readonly string _data;
 
         [UIAction("DeleteFilter")]
         internal void DeleteFilter()
         {
-            var filter = controller.filters
+            var filter = _controller.Filters
                 .Where(f => f is DisplayBaseFilter)
                 .Cast<DisplayBaseFilter>()
                 .ToList()
-                .Find(f => f.Name == name);
+                .Find(f => f.Name == _name);
             
-            controller.filters.Remove(filter);
+            _controller.Filters.Remove(filter);
 
-            controller.list.data.Remove(this);
-            controller.list.tableView.ReloadData();
+            _controller.list.data.Remove(this);
+            _controller.list.tableView.ReloadData();
 
-            if (controller.filters.Count == 0) controller.ToggleNoFiltersText(true);
+            if (_controller.Filters.Count == 0) _controller.ToggleNoFiltersText(true);
         }
 
         public FilterListCellWrapper(FilterViewController controller, string name, string data) 
         {
-            this.controller = controller;
-            this.name = name;
-            this.data = data;
+            this._controller = controller;
+            this._name = name;
+            this._data = data;
         }
     }
 
@@ -50,7 +49,7 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.ScoreFilters.bsml")]
     public class FilterViewController : BSMLAutomaticViewController
     {
-        private ScoreManager _scoresManager;
+        private readonly ScoreManager _scoresManager;
 
         [Inject]
         public FilterViewController(ScoreManager scoresManager)
@@ -59,7 +58,7 @@ namespace ScoreList.UI
 
             var baseFilters = new List<BaseFilter> { new SortPpFilter() };
             var score = _scoresManager.Query(baseFilters).GetAwaiter().GetResult();
-            if (score.Count > 0) maxPP = (int)score.First().PP;
+            if (score.Count > 0) maxPp = (int)score.First().PP;
         }
         
         // components
@@ -70,7 +69,7 @@ namespace ScoreList.UI
         
         [UIComponent("no-filters-text")] public LayoutElement noFiltersText;
         [UIComponent("list")] public CustomCellListTableData list;
-        public readonly List<BaseFilter> filters = new List<BaseFilter>();
+        public readonly List<BaseFilter> Filters = new List<BaseFilter>();
 
         // sort components
 
@@ -80,8 +79,8 @@ namespace ScoreList.UI
 
         // pp components
 
-        [UIComponent("filter-pp-minimum")] public SliderSetting filterPPMinimum;
-        [UIComponent("filter-pp-maximum")] public SliderSetting filterPPMaximum;
+        [UIComponent("filter-pp-minimum")] public SliderSetting filterPpMinimum;
+        [UIComponent("filter-pp-maximum")] public SliderSetting filterPpMaximum;
 
         // star components
 
@@ -113,17 +112,16 @@ namespace ScoreList.UI
         [UIAction("ApplyFilters")]
         internal void ApplyFilters()
         {
-            filters.AddRange(new BaseFilter[]{
-                new OrderFilter(order.Value),
-                new RankedFilter(ranked.Value == "Ranked"),
-                GetFilter(sort.Value)
+            Filters.AddRange(new[]{
+                new OrderFilter((string) order.Value),
+                new RankedFilter((string) ranked.Value == "Ranked"),
+                GetFilter((string) sort.Value)
             });
 
-            ScoreListCoordinator.Instance.ShowFilteredScores(filters);
+            ScoreListCoordinator.Instance.ShowFilteredScores(Filters);
         }
 
-
-        private BaseFilter GetFilter(string sortBy)
+        private static BaseFilter GetFilter(string sortBy)
         {
             switch (sortBy)
             {
@@ -148,6 +146,8 @@ namespace ScoreList.UI
             accuracyTab.IsVisible = type == "Ranked";
             ppTab.IsVisible = type == "Ranked";
 
+            
+            
             if (type == "Ranked") sortChoices.AddRange(new[] { "PP", "Stars", "Accuracy" });
             else sortChoices.RemoveRange(new object[] { "PP", "Stars", "Accuracy" });
 
@@ -155,14 +155,14 @@ namespace ScoreList.UI
             sort.UpdateChoices();
 
             // clear filters, TODO: figure out a better way to clear opposite filters
-            filters.Clear();
+            Filters.Clear();
             list.data.Clear();
             list.tableView.ReloadData();
         }
 
         [UIAction("ResetFilters")]
         internal void ResetFilters() {
-            filters.Clear();
+            Filters.Clear();
             list.data.Clear();
             list.tableView.ReloadData();
             
@@ -194,10 +194,10 @@ namespace ScoreList.UI
 
                 case "PP":
                     int? ppMaximum = null;
-                    if ((int)filterPPMaximum.Value != maxPP) ppMaximum = (int)filterPPMaximum.Value;
+                    if ((int)filterPpMaximum.Value != maxPp) ppMaximum = (int)filterPpMaximum.Value;
 
                     int? ppMinimum = null;
-                    if ((int)filterPPMinimum.Value != 0) ppMinimum = (int)filterPPMinimum.Value;
+                    if ((int)filterPpMinimum.Value != 0) ppMinimum = (int)filterPpMinimum.Value;
 
                     if (ppMaximum != null || ppMinimum != null)
                         return new PpFilter(ppMinimum, ppMaximum);
@@ -257,7 +257,7 @@ namespace ScoreList.UI
         [UIAction("CreateFilter")]
         internal void CreateFilter()
         {
-            var displayFilters = filters.Where(f => f is DisplayBaseFilter).Cast<DisplayBaseFilter>();
+            var displayFilters = Filters.Where(f => f is DisplayBaseFilter).Cast<DisplayBaseFilter>();
             if (displayFilters.Any(f => f.Name == filterChoice)) return;
 
             var filter = TryCreateFilter();
@@ -265,7 +265,7 @@ namespace ScoreList.UI
 
             var wrapper = new FilterListCellWrapper(this, filterChoice, filter.Display());
 
-            filters.Add(filter);
+            Filters.Add(filter);
             list.data.Add(wrapper);
             list.tableView.ReloadData();
 
@@ -279,13 +279,13 @@ namespace ScoreList.UI
         // choices
 
         [UIValue("order-choices")]
-        public List<object> orderChoices = new List<object> { "DESC", "ASC" };
+        public List<object> orderChoices => new List<object> { "DESC", "ASC" };
 
         [UIValue("ranked-choices")]
         public List<object> rankedChoices => new List<object> { "Ranked", "Unranked" };
 
         [UIValue("sort-choices")]
-        public List<object> sortChoices = new List<object> {
+        public List<object> sortChoices => new List<object> {
             "Rank",
             "TimeSet",
             "MissedNotes",
@@ -305,7 +305,7 @@ namespace ScoreList.UI
 
         // formatters
 
-        public List<string> monthChoices = new List<string> {
+        public List<string> monthChoices => new List<string> {
             "January ", "February", "March",
             "April",    "May",      "June",
             "July",     "August",   "September",
@@ -322,6 +322,6 @@ namespace ScoreList.UI
         [UIValue("max-stars")] public float maxStars = 14f;
         [UIValue("max-accuracy")] public int maxAccuracy = 100;
         [UIValue("max-misses")] public int maxMisses = 100;
-        [UIValue("max-pp")] public int maxPP;
+        [UIValue("max-pp")] public int maxPp;
     }
 }

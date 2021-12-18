@@ -10,6 +10,7 @@ using UnityEngine;
 using TMPro;
 using BeatSaberMarkupLanguage;
 using System.Linq;
+using ScoreList.Utils;
 using SiraUtil.Logging;
 using SiraUtil.Tools;
 
@@ -19,17 +20,14 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.ScoreDetail.bsml")]
     class DetailViewController : BSMLAutomaticViewController
     {
-        private readonly MenuTransitionsHelper menuTransitionsHelper;
-        private readonly BeatmapLevelsModel beatmapLevelsModel;
-        private readonly BeatSaver _beatsaver;
+        private readonly LevelSelectionUtils _levelSelectionUtils;
         private readonly SiraLog _siraLog;
+        private readonly ScoreManager _scoreManager;
 
         private bool canPlay = true;
-        
 
-        private LeaderboardScore score;
-        private LeaderboardInfo leaderboard;
-        private LeaderboardMapInfo info;
+        private LeaderboardInfo _leaderboard;
+        private LeaderboardMapInfo _info;
 
         [UIComponent("actionButton")]
         public Button actionButton;
@@ -38,26 +36,27 @@ namespace ScoreList.UI
         public TextMeshProUGUI title;
 
         [Inject]
-        public DetailViewController(MenuTransitionsHelper menuTransitionsHelper, BeatmapLevelsModel beatmapLevelsModel, SiraLog siraLog)
+        public DetailViewController(
+            LevelSelectionUtils levelSelectionUtils,
+            SiraLog siraLog,
+            ScoreManager scoreManager
+        )
         {
-            this.menuTransitionsHelper = menuTransitionsHelper;
-            this.beatmapLevelsModel = beatmapLevelsModel;
+            _levelSelectionUtils = levelSelectionUtils;
             _siraLog = siraLog;
-
-            var options = new BeatSaverOptions("ScoreList (Solaris#1969)", "0.0.1");
-            beatsaver = new BeatSaver(options);
+            _scoreManager = scoreManager;
         }
 
         public async Task Load(LeaderboardScore score)
         {
-            leaderboard = await score.GetLeaderboard();
-            info = await score.GetMapInfo();
+            _leaderboard = await _scoreManager.GetLeaderboard(score.LeaderboardId);
+            _info = await _scoreManager.GetMapInfo(_leaderboard.SongHash);
 
-            title.text = info.SongName;
+            title.text = _info.SongName;
 
             actionButton.SetButtonText("Play");
 
-            if (!SongDataCore.Plugin.Songs.Data.Songs.ContainsKey(info.SongHash))
+            if (!SongDataCore.Plugin.Songs.Data.Songs.ContainsKey(_info.SongHash))
             {
                 actionButton.SetButtonText("Download");
                 canPlay = false;
@@ -67,33 +66,29 @@ namespace ScoreList.UI
         public void Reset()
         {
             canPlay = true;
-            leaderboard = null;
-            info = null;
+            _leaderboard = null;
+            _info = null;
         }
 
         
         //TODO: Need to fix this shit too.
-        /*[UIAction("StartLevel")]
+        [UIAction("StartLevel")]
         public async Task StartLevel()
         {
-            if (!canPlay)
+            /*if (!canPlay)
             {
                 await beatsaver.BeatmapByHash(info.SongHash);
                 actionButton.SetButtonText("Play");
                 return;
-            }
-#if DEBUG
-            _siraLog.Debug($"StartStandardLevel is: {menuTransitionsHelper}");
-#endif
+            }*/
             
-            var token = new System.Threading.CancellationToken();
-            var beatmapDifficulty = SongUtils.GetBeatmapDifficulty(leaderboard.Difficultly);
-            var beatmapCharacteristic = ScriptableObject.CreateInstance<BeatmapCharacteristicSO>();
-            var beatmapLevelResult = await beatmapLevelsModel.GetBeatmapLevelAsync($"custom_level_{info.SongHash}", token);
-            var beatmapLevelData = beatmapLevelResult.beatmapLevel.beatmapLevelData;
-            var difficultyBeatmap = beatmapLevelData.GetDifficultyBeatmap(beatmapCharacteristic, beatmapDifficulty);
-
-            menuTransitionsHelper.StartStandardLevel("SoloStandard", difficultyBeatmap, null, null, null, null, null, null, null, false, null, null);
-        }*/
+            await _levelSelectionUtils.StartSoloLevel(
+                _info.SongHash,
+                _leaderboard.Difficultly,
+                () => { },
+                (so, results) => { }
+            );
+            
+        }
     }
 }

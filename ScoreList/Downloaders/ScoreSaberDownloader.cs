@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ScoreList.Scores;
 using ScoreList.Utils;
 using SiraUtil.Logging;
 using SiraUtil.Tools;
@@ -21,11 +23,13 @@ namespace ScoreList.Downloaders
         private static Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
         
         private readonly SiraLog _siraLog;
+        private readonly ScoreManager _scoreManager;
         private readonly IPlatformUserModel _user;
         
-        public ScoreSaberDownloader(SiraLog siraLog, IPlatformUserModel user) : base(siraLog)
+        public ScoreSaberDownloader(SiraLog siraLog, IPlatformUserModel user, ScoreManager scoreManager) : base(siraLog)
         {
             _siraLog = siraLog;
+            _scoreManager = scoreManager;
             _user = user;
         }
 
@@ -33,14 +37,6 @@ namespace ScoreList.Downloaders
         {
             var userID = _user.GetUserInfo().Id;
             return userID;
-        }
-
-        public async Task<List<ScoreSaberUtils.ScoreSaberLeaderboardEntry>> GetScores(int id, CancellationToken cancellationToken)
-        {
-            id = GetUserID();
-            
-            string url = API_URL + PLAYER + id;
-            return await MakeJsonRequestAsync<List<ScoreSaberUtils.ScoreSaberLeaderboardEntry>>(url, cancellationToken);
         }
 
         public async Task<Sprite> GetCoverImageAsync(string hash, CancellationToken cancellationToken)
@@ -60,6 +56,30 @@ namespace ScoreList.Downloaders
             }
 
             return sprite;
+        }
+        
+        private async Task<ScoreSaberUtils.ScoreSaberScores> GetScores(
+            int page, string sort, CancellationToken cancellationToken)
+        {
+            var id = GetUserID();
+            string url = API_URL + PLAYER + id + SCORES + $"?page{page}&sort={sort}&limit=100";
+            return await MakeJsonRequestAsync<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken);
+        }
+
+        public async Task CacheScores(int current, CancellationToken cancellationToken)
+        {
+            var data = await GetScores(current + 1, "recent",  cancellationToken);
+
+            var maps = data.PlayerScores.Select(e => LeaderboardMapInfo.Create(e.Leaderboard));
+            var leaderboards = data.PlayerScores.Select(LeaderboardInfo.Create);
+            var scores = data.PlayerScores.Select(LeaderboardScore.Create);
+
+            await _scoreManager.InsertScores(scores.ToArray());
+            await _scoreManager.InsertLeaderboards(leaderboards.ToArray());
+            await _scoreManager.InsertMaps(maps.ToArray());
+                
+            // delay so there's a max of 400 requests within a minute
+            await Task.Delay(200, cancellationToken);
         }
     }
 }

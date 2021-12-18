@@ -168,8 +168,8 @@
   <ItemGroup>
     <Compile Include="Downloaders\Downloader.cs" />
     <Compile Include="Downloaders\ScoreSaberDownloader.cs" />
-    <Compile Include="Installers\AppInstallers.cs" />
-    <Compile Include="Installers\MenuInstallers.cs" />
+    <Compile Include="Installers\AppInstaller.cs" />
+    <Compile Include="Installers\MenuInstaller.cs" />
     <Compile Include="Scores\ScoreManager.cs" />
     <Compile Include="Scores\Filters.cs" />
     <Compile Include="Scores\Utils.cs" />
@@ -182,7 +182,7 @@
     <Compile Include="UI\ScoreViewController.cs" />
     <Compile Include="UI\ScoreListUI.cs" />
     <Compile Include="Utils\CSExtensions.cs" />
-    <Compile Include="Utils\PlayButtonUtils.cs" />
+    <Compile Include="Utils\LevelSelectionUtils.cs" />
     <Compile Include="Utils\ScoreSaberUtils.cs" />
   </ItemGroup>
   <ItemGroup>

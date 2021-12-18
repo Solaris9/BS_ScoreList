@@ -19,12 +19,8 @@ namespace ScoreList.Configuration
         
         public static PluginConfig Load()
         {
-            if (!File.Exists(_path))
-            {
-                File.Create(_path);
-                return new PluginConfig();
-            }
-            
+            if (!File.Exists(_path)) return new PluginConfig();
+
             var content = File.ReadAllText(_path);
             return JsonConvert.DeserializeObject<PluginConfig>(content);
         }

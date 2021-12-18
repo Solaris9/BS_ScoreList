@@ -8,6 +8,7 @@ namespace ScoreList.Installers
     {
         public override void InstallBindings()
         {
+            Container.Bind<FilterViewController>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<ScoreViewController>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<DetailViewController>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<ConfigViewController>().FromNewComponentAsViewController().AsSingle();

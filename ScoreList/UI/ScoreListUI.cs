@@ -1,7 +1,6 @@
 ﻿using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.MenuButtons;
 using HMUI;
-using IPA.Utilities;
 using ScoreList.Scores;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using SiraUtil.Logging;
 using Zenject;
 
 namespace ScoreList.UI {
-    class ScoreListCoordinator : FlowCoordinator {
+    internal class ScoreListCoordinator : FlowCoordinator {
         public static ScoreListCoordinator Instance;
 
         [Inject]
@@ -20,6 +19,7 @@ namespace ScoreList.UI {
         private ScoreViewController _scoreView;
         private DetailViewController _detailView;
         private FilterViewController _filterView;
+        private ConfigViewController _configView;
 
         public ScoreListCoordinator(SiraLog siraLog, ScoreManager scoreManager)
         {
@@ -31,26 +31,27 @@ namespace ScoreList.UI {
 
         public void Awake()
         {
-            if (_scoreView == null)
-            {
-                _scoreView = BeatSaberUI.CreateViewController<ScoreViewController>();
-                _detailView = BeatSaberUI.CreateViewController<DetailViewController>();
-                _filterView = BeatSaberUI.CreateViewController<FilterViewController>();
+            if (_scoreView != null) return;
+            
+            _scoreView = BeatSaberUI.CreateViewController<ScoreViewController>();
+            _detailView = BeatSaberUI.CreateViewController<DetailViewController>();
+            _filterView = BeatSaberUI.CreateViewController<FilterViewController>();
+            _configView = BeatSaberUI.CreateViewController<ConfigViewController>();
 
-                _scoreView.didSelectSong += HandleDidSelectSong;
-            }
+            _scoreView.DidSelectSong += HandleDidSelectSong;
         }
 
         protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-            try {
-                if (firstActivation) {
-                    Instance = this;
+            try
+            {
+                if (!firstActivation) return;
+                
+                Instance = this;
 
-                    SetTitle("ScoreList");
-                    showBackButton = true;
+                SetTitle("ScoreList");
+                showBackButton = true;
 
-                    ProvideInitialViewControllers(_scoreView, _filterView, _detailView);
-                }
+                ProvideInitialViewControllers(_scoreView, _filterView, _detailView, _configView);
             } catch (Exception ex) {
                 _siraLog.Error(ex);
             }
@@ -68,22 +69,22 @@ namespace ScoreList.UI {
         public void SetParentFlowCoordinator(FlowCoordinator parent) => _parentFlowCoordinator = parent;
     }
 
-    class ScoreListUI : PersistentSingleton<ScoreListUI> {
-        public MainMenuViewController.MenuButton scoreListMenuButton;
-        internal ScoreListCoordinator scoreListFlowCooridinator;
+    internal class ScoreListUI : PersistentSingleton<ScoreListUI> {
+        private MenuButton _scoreListMenuButton;
+        private ScoreListCoordinator _scoreListFlowCoordinator;
 
         internal void Setup() {
-            scoreListMenuButton = new MainMenuViewController.MenuButton("ScoreList", "Sort and filter all your scores to view your best and worst!", ScoreListMenuButtonPressed, true);
-            MenuButtons.instance.RegisterButton(scoreListMenuButton);
+            _scoreListMenuButton = new MenuButton("ScoreList", "Sort and filter all your scores to view your best and worst!", ScoreListMenuButtonPressed);
+            MenuButtons.instance.RegisterButton(_scoreListMenuButton);
         }
 
         private void ScoreListMenuButtonPressed() {
-            if (scoreListFlowCooridinator == null)
-                scoreListFlowCooridinator = BeatSaberUI.CreateFlowCoordinator<ScoreListCoordinator>();
+            if (_scoreListFlowCoordinator == null)
+                _scoreListFlowCoordinator = BeatSaberUI.CreateFlowCoordinator<ScoreListCoordinator>();
 
-            scoreListFlowCooridinator.SetParentFlowCoordinator(BeatSaberUI.MainFlowCoordinator);
+            _scoreListFlowCoordinator.SetParentFlowCoordinator(BeatSaberUI.MainFlowCoordinator);
 
-            BeatSaberUI.MainFlowCoordinator.PresentFlowCoordinator(scoreListFlowCooridinator, null, ViewController.AnimationDirection.Horizontal, true);
+            BeatSaberUI.MainFlowCoordinator.PresentFlowCoordinator(_scoreListFlowCoordinator, null, ViewController.AnimationDirection.Horizontal, true);
         }
     }
 }

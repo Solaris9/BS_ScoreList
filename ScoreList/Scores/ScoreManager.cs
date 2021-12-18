@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using ScoreList.Utils;
 
 namespace ScoreList.Scores
 {
@@ -118,6 +119,19 @@ namespace ScoreList.Scores
         public int Modifiers { get; set; }
         public int MissedNotes { get; set; }
         public DateTime TimeSet { get; set; }
+
+        public static LeaderboardScore Create(ScoreSaberUtils.ScoreSaberLeaderboardEntry entry) => 
+            new LeaderboardScore {
+                ScoreId = entry.Score.Id,
+                LeaderboardId = entry.Leaderboard.Id,
+                Rank = entry.Score.Rank,
+                BaseScore = entry.Score.BaseScore,
+                ModifiedScore = entry.Score.ModifiedScore,
+                PP = entry.Score.PP,
+                Modifiers = SongUtils.ParseModifiers(entry.Score.Modifiers),
+                MissedNotes = entry.Score.MissedNotes,
+                TimeSet = DateTime.Parse(entry.Score.TimeSet)
+            };
     }
 
     public class LeaderboardInfo
@@ -132,6 +146,29 @@ namespace ScoreList.Scores
         public int MaxScore { get; set; }
         public double Stars { get; set; }
         public bool PositiveModifiers { get; set; }
+
+        public static LeaderboardInfo Create(ScoreSaberUtils.ScoreSaberLeaderboardEntry entry)
+        {
+            DateTime? rankedDate = null;
+            if (entry.Leaderboard.RankedDate != null) rankedDate = DateTime.Parse(entry.Leaderboard.RankedDate);
+                
+            double maxPp = entry.Leaderboard.MaxPP;
+            if (maxPp == -1) maxPp = entry.Score.PP * entry.Leaderboard.MaxScore / entry.Score.BaseScore;
+            
+            return new LeaderboardInfo
+            {
+                LeaderboardId = entry.Leaderboard.Id,
+                Ranked = entry.Leaderboard.Ranked,
+                SongHash = entry.Leaderboard.SongHash,
+                Difficultly = entry.Leaderboard.Difficulty.Difficulty,
+                GameMode = entry.Leaderboard.Difficulty.GameMode,
+                RankedDate = rankedDate,
+                MaxPP = maxPp,
+                MaxScore = entry.Leaderboard.MaxScore,
+                Stars = entry.Leaderboard.Stars,
+                PositiveModifiers = entry.Leaderboard.PositiveModifiers,
+            };
+        }
     }
 
     public class LeaderboardMapInfo
@@ -142,5 +179,15 @@ namespace ScoreList.Scores
         public string SongAuthorName { get; set; }
         public string LevelAuthorName { get; set; }
         public DateTime CreatedDate { get; set; }
+
+        public static LeaderboardMapInfo Create(ScoreSaberUtils.ScoreSaberLeaderboardInfo info) => 
+            new LeaderboardMapInfo {
+                SongHash = info.SongHash,
+                SongName = info.SongName,
+                SongSubName = info.SongSubName,
+                SongAuthorName = info.SongAuthorName,
+                LevelAuthorName = info.LevelAuthorName,
+                CreatedDate = DateTime.Parse(info.CreatedDate),
+            };
     }
 }

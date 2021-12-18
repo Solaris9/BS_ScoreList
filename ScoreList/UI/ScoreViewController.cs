@@ -5,8 +5,10 @@ using HMUI;
 using ScoreList.Scores;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using ScoreList.Configuration;
+using SiraUtil.Logging;
 using TMPro;
 using UnityEngine.UI;
 using Zenject;
@@ -72,14 +74,16 @@ namespace ScoreList.UI {
     [HotReload(RelativePathToLayout = @"Views\ScoreList.bsml")]
     [ViewDefinition("ScoreList.UI.Views.ScoreList.bsml")]
     public class ScoreViewController : BSMLAutomaticViewController {
-        public event Action<int> didSelectSong;
-        private ScoreManager _scoresManager;
-        private PluginConfig _config;
+        public event Action<int> DidSelectSong;
+        private readonly ScoreManager _scoreManager;
+        private readonly SiraLog _logger;
+        private readonly PluginConfig _config;
 
         [Inject]
-        public ScoreViewController(ScoreManager scoresManager, PluginConfig config)
+        public ScoreViewController(ScoreManager scoreManager, SiraLog logger, PluginConfig config)
         {
-            _scoresManager = scoresManager;
+            _scoreManager = scoreManager;
+            _logger = logger;
             _config = config;
         }
 
@@ -89,7 +93,7 @@ namespace ScoreList.UI {
         [UIAction("#post-parse")]
         internal void SetupUI()
         {
-            if (!_config.Complete) return;
+            // if (!_config.Complete) return;
 
             var filters = new List<BaseFilter>
             {
@@ -101,25 +105,28 @@ namespace ScoreList.UI {
         }
 
         [UIAction("SongSelect")]
-        public void SongSelect(TableView _, object song) => didSelectSong?.Invoke(((ScoreInfoCellWrapper)song).ScoreId);
+        public void SongSelect(TableView _, object song) => DidSelectSong?.Invoke(((ScoreInfoCellWrapper)song).ScoreId);
 
         public async void FilterScores(List<BaseFilter> filters) {
             scoreList.data.Clear();
 
-            var scores = await _scoresManager.Query(filters);
+            var scores = await _scoreManager.Query(filters);
             if (scores.Count == 0) return;
 
             foreach (var score in scores)
             {
-                var leaderboard = await _scoresManager.GetLeaderboard(score.LeaderboardId);
-                var map = await _scoresManager.GetMapInfo(leaderboard.SongHash);
+                var leaderboard = await _scoreManager.GetLeaderboard(score.LeaderboardId);
+                var map = await _scoreManager.GetMapInfo(leaderboard.SongHash);
                 
                 var scoreCell = new ScoreInfoCellWrapper(score, leaderboard, map);
                 scoreList.data.Add(scoreCell);
             }
-
-            didSelectSong?.Invoke(((ScoreInfoCellWrapper)scoreList.data[0]).ScoreId);
+            
             scoreList.tableView.ReloadData();
+            _scoreManager.Clean();
+    
+            // select first song when new filters are applied
+            if (scoreList.data.Count > 0) DidSelectSong?.Invoke(((ScoreInfoCellWrapper)scoreList.data[0]).ScoreId);
         }
     }
 }
