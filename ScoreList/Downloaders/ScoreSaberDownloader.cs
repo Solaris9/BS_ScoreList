@@ -6,21 +6,22 @@ using System.Threading.Tasks;
 using ScoreList.Scores;
 using ScoreList.Utils;
 using SiraUtil.Logging;
-using SiraUtil.Tools;
 using UnityEngine;
+using Zenject;
+#pragma warning disable CS0649
 
 namespace ScoreList.Downloaders
 {
     public class ScoreSaberDownloader : Downloader
     {
-        private const string API_URL = "https://scoresaber.com/api/";
-        private const string PLAYER = "player/";
-        private const string SCORES = "/scores";
+        const string API_URL = "https://scoresaber.com/api/";
+        const string PLAYER = "player/";
+        const string SCORES = "/scores";
 
-        private const string CDN_URL = "https://cdn.scoresaber.com/";
-        private const string COVERS = "covers/";
+        const string CDN_URL = "https://cdn.scoresaber.com/";
+        const string COVERS = "covers/";
 
-        private static Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
+        static Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
         
         private readonly SiraLog _siraLog;
         private readonly ScoreManager _scoreManager;
@@ -33,7 +34,7 @@ namespace ScoreList.Downloaders
             _user = user;
         }
 
-        private async Task<string> GetUserID()
+        async Task<string> GetUserID()
         {
             var userID = await _user.GetUserInfo();
             return userID.platformUserId;
@@ -58,17 +59,18 @@ namespace ScoreList.Downloaders
             return sprite;
         }
         
-        private async Task<ScoreSaberUtils.ScoreSaberScores> GetScores(
-            int page, string sort, CancellationToken cancellationToken)
+        async Task<ScoreSaberUtils.ScoreSaberScores> GetScores(
+            int page, string sort, CancellationToken cancellationToken, Action<float> progressCallback
+            )
         {
             var id = await GetUserID();
             string url = API_URL + PLAYER + id + SCORES + $"?page{page}&sort={sort}&limit=100";
-            return await MakeJsonRequestAsync<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken);
+            return await MakeJsonRequestAsync<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken, progressCallback);
         }
 
-        public async Task CacheScores(int current, CancellationToken cancellationToken)
+        public async Task CacheScores(int current, CancellationToken cancellationToken, Action<float> progressCallback)
         {
-            var data = await GetScores(current, "recent",  cancellationToken);
+            var data = await GetScores(current, "recent",  cancellationToken, progressCallback);
 
             var maps = data.PlayerScores.Select(e => LeaderboardMapInfo.Create(e.Leaderboard));
             var leaderboards = data.PlayerScores.Select(LeaderboardInfo.Create);

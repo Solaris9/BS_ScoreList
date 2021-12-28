@@ -5,39 +5,26 @@ using IPA.Loader;
 using Newtonsoft.Json;
 using ScoreList.Utils;
 using SiraUtil.Logging;
-using SiraUtil.Tools;
-using SiraUtil.Zenject;
 using UnityEngine;
 using UnityEngine.Networking;
+
+#pragma warning disable CS0649
 
 namespace ScoreList.Downloaders
 {
     public abstract class Downloader
     {
-        internal string USER_AGENT { get; set; }
+        internal readonly string USER_AGENT;
         internal ConcurrentHashSet<UnityWebRequest> _ongoingWebRequests = new ConcurrentHashSet<UnityWebRequest>();
-        internal readonly PluginMetadata _metadata;
         private readonly SiraLog _siraLog;
-
-        public Downloader(PluginMetadata metadata, SiraLog siraLog)
-        {
-            _metadata = metadata;
-            _siraLog = siraLog;
-            USER_AGENT = $"SongList/v{_metadata.HVersion}";
-        }
-
+        
         protected Downloader(SiraLog siraLog)
         {
             _siraLog = siraLog;
+            USER_AGENT = $"SongList/v{Plugin.Version}";
         }
 
-        ~Downloader()
-        {
-            foreach (var webRequest in _ongoingWebRequests)
-            {
-                webRequest.Abort();
-            }
-        }
+        ~Downloader() => CancelAllDownloads();
 
         public void CancelAllDownloads()
         {
@@ -46,6 +33,7 @@ namespace ScoreList.Downloaders
                 webRequest.Abort();
             }
         }
+        
         internal async Task<T> MakeJsonRequestAsync<T>(string url, CancellationToken cancellationToken, Action<float> progressCallback = null)
         {
             var www = await MakeRequestAsync(url, cancellationToken, progressCallback);
@@ -62,7 +50,7 @@ namespace ScoreList.Downloaders
             catch (Exception e)
             {
                 _siraLog.Warn($"Error parsing response: {e.Message}");
-                return default(T);
+                return default;
             }
         }
         
@@ -87,16 +75,18 @@ namespace ScoreList.Downloaders
             }
         }
 
-        private async Task<UnityWebRequest> MakeRequestAsync(string url, CancellationToken cancellationToken,
-            Action<float> progressCallback = null)
+        private async Task<UnityWebRequest> MakeRequestAsync(
+            string url, CancellationToken cancellationToken, Action<float> progressCallback = null)
         {
             var www = UnityWebRequest.Get(url);
-            // www.SetRequestHeader("User-Agent", USER_AGENT);
+            www.SetRequestHeader("User-Agent", USER_AGENT);
             www.timeout = 15;
 #if DEBUG
             _siraLog.Debug($"Making web request: {url}");
 #endif
             _ongoingWebRequests.Add(www);
+
+            www.SendWebRequest();
 
             while (!www.isDone)
             {
@@ -109,7 +99,7 @@ namespace ScoreList.Downloaders
                 await Task.Yield();
             }
 #if DEBUG
-            _siraLog.Debug("Web request {url} finished");
+            _siraLog.Debug($"Web request {url} finished");
 #endif
             _ongoingWebRequests.Remove(www);
 

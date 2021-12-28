@@ -1,12 +1,15 @@
 ﻿using ScoreList.UI;
+using ScoreList.Utils;
 using Zenject;
 
 namespace ScoreList.Installers
 {
-    public class MenuInstaller : Installer
+    internal class MenuInstaller : Installer
     {
         public override void InstallBindings()
         {
+            Container.Bind<LevelSelectionUtils>().AsSingle().NonLazy();
+        
             Container.Bind<FilterViewController>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<ScoreViewController>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<DetailViewController>().FromNewComponentAsViewController().AsSingle();

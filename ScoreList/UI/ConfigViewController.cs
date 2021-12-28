@@ -1,15 +1,15 @@
-﻿using System.Linq;
+﻿using System.Globalization;
 using System.Threading;
-using System.Threading.Tasks;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
-using ScoreList.Configuration;
 using ScoreList.Downloaders;
 using ScoreList.Scores;
 using TMPro;
 using UnityEngine.UI;
 using Zenject;
+
+#pragma warning disable CS0649
 
 namespace ScoreList.UI
 {
@@ -17,15 +17,16 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.Config.bsml")]
     public class ConfigViewController : BSMLAutomaticViewController
     {
-        [Inject] private ScoreManager _scoreManager;
-        [Inject] private ScoreSaberDownloader _downloader;
+        [Inject] readonly ScoreManager _scoreManager;
+        [Inject] readonly ScoreSaberDownloader _downloader;
         // [Inject] private PluginConfig _config;
         
-        [UIComponent("cache-status")] public TextMeshProUGUI cacheStatus;
-        [UIComponent("cache-button")] public Button cacheButton;
+        [UIComponent("cache-status")] readonly TextMeshProUGUI cacheStatus;
+        [UIComponent("current-status")] readonly TextMeshProUGUI currentStatus;
+        [UIComponent("cache-button")] readonly Button cacheButton;
 
         [UIAction("#post-parse")]
-        internal void SetupUI()
+        void SetupUI()
         {
             /*if (_config.Complete)
             {
@@ -40,7 +41,7 @@ namespace ScoreList.UI
         }
 
         [UIAction("CacheScores")]
-        internal async void CacheScores()
+        async void CacheScores()
         {
             var cancellationToken = new CancellationToken();
             
@@ -51,13 +52,17 @@ namespace ScoreList.UI
 
             for (; current < max; current++)
             {
-                await _downloader.CacheScores(current + 1, cancellationToken);
+                await _downloader.CacheScores(current + 1, cancellationToken, f =>
+                {
+                    currentStatus.text = f.ToString(CultureInfo.InvariantCulture);
+                });
                 cacheStatus.text = $"{current + 1}/{max}";
             }
             
             _scoreManager.Clean();
 
             cacheStatus.text = "Updated scores";
+            
             cacheButton.SetButtonText("Up to date");
             cacheButton.interactable = false;
 

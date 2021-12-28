@@ -75,7 +75,7 @@
 		<dropdown-list-setting id='ranked' text='Score by' choices='ranked-choices' on-change='TypeChanged' />
 	</vertical>
 
-	<vertical pad='3' pad-left='3' pad-right='3' horizontal-fit='Unconstrained'>
+	<vertical pad='4' pad-left='3' pad-right='3' horizontal-fit='Unconstrained'>
 		<vertical id='no-filters-text' bg='panel-top' align='Center' pad='1' pad-left='2' pad-right='2'>
 			<text text='No filters added yet'/>
 		</vertical>

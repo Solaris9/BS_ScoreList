@@ -6,36 +6,36 @@ using ScoreList.Scores;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using ScoreList.Configuration;
 using SiraUtil.Logging;
 using TMPro;
 using UnityEngine.UI;
 using Zenject;
+#pragma warning disable CS0649
 
-namespace ScoreList.UI {
+namespace ScoreList.UI
+{
     public class ScoreInfoCellWrapper
     {
-        public int ScoreId;
+        public readonly int ScoreId;
         
-        [UIValue("icon")] public string icon;
+        [UIValue("icon")] readonly string icon;
 
-        [UIValue("title")] public string title;
-        [UIValue("artist")] public string artist;
-        [UIValue("mapper")] public string mapper;
+        [UIValue("title")] readonly string title;
+        [UIValue("artist")] readonly string artist;
+        [UIValue("mapper")] readonly string mapper;
 
-        [UIValue("rank")] public string rank;
-        [UIValue("modifiers")] public string modifiers;
-        [UIValue("missed-notes")] public string missedNotes;
-        [UIValue("difficulty")] public string difficulty;
+        [UIValue("rank")] readonly string rank;
+        [UIValue("modifiers")] readonly string modifiers;
+        [UIValue("missed-notes")] readonly string missedNotes;
+        [UIValue("difficulty")] readonly string difficulty;
 
-        [UIComponent("stars")] public TextMeshProUGUI stars;
+        [UIComponent("stars")] readonly TextMeshProUGUI stars;
+        [UIComponent("accuracy-layout")] readonly LayoutElement accuracyLayout;
+        [UIComponent("pp-layout")] readonly LayoutElement ppLayout;
 
-        [UIComponent("accuracy-layout")] public LayoutElement accuracyLayout;
-        [UIComponent("pp-layout")] public LayoutElement ppLayout;
-
-        [UIValue("accuracy")] public string accuracy;
-        [UIValue("max-pp")] public string maxPP;
-        [UIValue("pp")] public string pp;
+        [UIValue("accuracy")] readonly string accuracy;
+        [UIValue("max-pp")] readonly string maxPP;
+        [UIValue("pp")] readonly string pp;
 
         public ScoreInfoCellWrapper(LeaderboardScore score, LeaderboardInfo leaderboard, LeaderboardMapInfo info)
         {
@@ -60,8 +60,8 @@ namespace ScoreList.UI {
 
                 stars.text = leaderboard.Stars.ToString("#.00★");
                 accuracy = (100f * score.BaseScore / leaderboard.MaxScore).ToString("0.##");
-                maxPP = leaderboard.MaxPP.ToString("#.00");
-                pp = score.PP.ToString("#.00");
+                maxPP = leaderboard.MaxPp.ToString("#.00");
+                pp = score.Pp.ToString("#.00");
             }
             else
             {
@@ -72,11 +72,12 @@ namespace ScoreList.UI {
 
     [HotReload(RelativePathToLayout = @"Views\ScoreList.bsml")]
     [ViewDefinition("ScoreList.UI.Views.ScoreList.bsml")]
-    public class ScoreViewController : BSMLAutomaticViewController {
+    public class ScoreViewController : BSMLAutomaticViewController
+    {
         public event Action<int> DidSelectSong;
         
         [Inject] private readonly ScoreManager _scoreManager;
-        [Inject] private readonly SiraLog _logger;
+        [Inject] private readonly SiraLog _siraLog;
         // [Inject] private readonly PluginConfig _config;
 
         [UIComponent("list")]
@@ -93,13 +94,14 @@ namespace ScoreList.UI {
                 new OrderFilter("DESC")
             };
 
-            // FilterScores(filters);
+            FilterScores(filters);
         }
 
         [UIAction("SongSelect")]
         public void SongSelect(TableView _, object song) => DidSelectSong?.Invoke(((ScoreInfoCellWrapper)song).ScoreId);
 
-        public async void FilterScores(List<BaseFilter> filters) {
+        public async void FilterScores(List<BaseFilter> filters)
+        {
             scoreList.data.Clear();
 
             var scores = await _scoreManager.Query(filters);

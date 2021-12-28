@@ -42,7 +42,7 @@ namespace ScoreList.Utils
             [JsonProperty("rank")] public int Rank;
             [JsonProperty("baseScore")] public int BaseScore;
             [JsonProperty("modifiedScore")] public int ModifiedScore;
-            [JsonProperty("pp")] public double PP;
+            [JsonProperty("pp")] public double Pp;
             [JsonProperty("weight")] public double Weight;
             [JsonProperty("modifiers")] public string Modifiers;
             [JsonProperty("multiplier")] public double Multiplier;
@@ -50,7 +50,7 @@ namespace ScoreList.Utils
             [JsonProperty("missedNotes")] public int MissedNotes;
             [JsonProperty("maxCombo")] public int MaxCombo;
             [JsonProperty("fullCombo")] public bool FullCombo;
-            [JsonProperty("hmd")] public int HMD;
+            [JsonProperty("hmd")] public int Hmd;
             [JsonProperty("timeSet")] public string TimeSet;
             [JsonProperty("hasReplay")] public bool HasReply;
         }
@@ -72,7 +72,7 @@ namespace ScoreList.Utils
             [JsonProperty("ranked")] public bool Ranked;
             [JsonProperty("qualified")] public bool Qualified;
             [JsonProperty("loved")] public bool Loved;
-            [JsonProperty("maxPP")] public int MaxPP;
+            [JsonProperty("maxPP")] public int MaxPp;
             [JsonProperty("stars")] public double Stars;
             [JsonProperty("plays")] public int Plays;
             [JsonProperty("positiveModifiers")] public bool PositiveModifiers;

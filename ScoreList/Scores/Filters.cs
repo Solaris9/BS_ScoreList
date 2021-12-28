@@ -60,7 +60,7 @@ namespace ScoreList.Scores
     public class SortPpFilter : BaseFilter
     {
         public override void Apply(ref List<LeaderboardScore> scores, LeaderboardData data) =>
-            scores.Sort((s1, s2) => s1.PP.CompareTo(s2.PP));
+            scores.Sort((s1, s2) => s1.Pp.CompareTo(s2.Pp));
     }
     
     public class SortRankFilter : BaseFilter
@@ -91,10 +91,9 @@ namespace ScoreList.Scores
 
         public override void Apply(ref List<LeaderboardScore> scores, LeaderboardData data)
         {
-            var leaderboards = data.Leaderboards.Where(l => l.Ranked);
             scores = scores.Where(s =>
             {
-                var leaderboard = leaderboards.First(l => l.LeaderboardId == s.LeaderboardId);
+                var leaderboard = data.Leaderboards.First(l => l.LeaderboardId == s.LeaderboardId);
                 return leaderboard.Ranked == _isRanked;
             }).ToList();
         }
@@ -239,7 +238,7 @@ namespace ScoreList.Scores
 
         public override void Apply(ref List<LeaderboardScore> scores, LeaderboardData data)
         {
-            scores = scores.Where(s => s.PP > _start && s.PP < _end).ToList();
+            scores = scores.Where(s => s.Pp > _start && s.Pp < _end).ToList();
         }
     }
 }

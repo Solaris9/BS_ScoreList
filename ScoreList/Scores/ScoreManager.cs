@@ -10,9 +10,9 @@ namespace ScoreList.Scores
 {
     public class ScoreManager
     {
-        private static LeaderboardData _data;
+        static LeaderboardData _data;
         
-        private readonly string _filePath = Path.Combine(Plugin.ModFolder, "data.json");
+        readonly string _filePath = Path.Combine(Plugin.ModFolder, "data.json");
 
         public async Task InsertScores(params LeaderboardScore[] scores)
         {
@@ -52,6 +52,9 @@ namespace ScoreList.Scores
             if (_data == null) return;
             
             var json = JsonConvert.SerializeObject(_data);
+
+            if (!Directory.Exists(Plugin.ModFolder))
+                Directory.CreateDirectory(Plugin.ModFolder);
             
             using (var sw = new StreamWriter(_filePath)) 
                 await sw.WriteAsync(json);
@@ -59,7 +62,7 @@ namespace ScoreList.Scores
             _data = null;
         }
 
-        private async Task<LeaderboardData> Read()
+        async Task<LeaderboardData> Read()
         {
             if (!File.Exists(_filePath)) return new LeaderboardData();
 
@@ -103,22 +106,22 @@ namespace ScoreList.Scores
 
     public class LeaderboardData
     {
-        public List<LeaderboardScore> Scores = new List<LeaderboardScore>();
-        public List<LeaderboardInfo> Leaderboards = new List<LeaderboardInfo>();
-        public List<LeaderboardMapInfo> Maps = new List<LeaderboardMapInfo>();
+        public readonly List<LeaderboardScore> Scores = new List<LeaderboardScore>();
+        public readonly List<LeaderboardInfo> Leaderboards = new List<LeaderboardInfo>();
+        public readonly List<LeaderboardMapInfo> Maps = new List<LeaderboardMapInfo>();
     }
     
     public class LeaderboardScore
     {
-        public int ScoreId { get; set; }
-        public int LeaderboardId { get; set; }
-        public int Rank { get; set; }
-        public int BaseScore { get; set; }
-        public int ModifiedScore { get; set; }
-        public double PP { get; set; }
-        public int Modifiers { get; set; }
-        public int MissedNotes { get; set; }
-        public DateTime TimeSet { get; set; }
+        public int ScoreId;
+        public int LeaderboardId;
+        public int Rank;
+        public int BaseScore;
+        public int ModifiedScore;
+        public double Pp;
+        public int Modifiers;
+        public int MissedNotes;
+        public DateTime TimeSet;
 
         public static LeaderboardScore Create(ScoreSaberUtils.ScoreSaberLeaderboardEntry entry) => 
             new LeaderboardScore {
@@ -127,7 +130,7 @@ namespace ScoreList.Scores
                 Rank = entry.Score.Rank,
                 BaseScore = entry.Score.BaseScore,
                 ModifiedScore = entry.Score.ModifiedScore,
-                PP = entry.Score.PP,
+                Pp = entry.Score.Pp,
                 Modifiers = SongUtils.ParseModifiers(entry.Score.Modifiers),
                 MissedNotes = entry.Score.MissedNotes,
                 TimeSet = DateTime.Parse(entry.Score.TimeSet)
@@ -136,24 +139,24 @@ namespace ScoreList.Scores
 
     public class LeaderboardInfo
     {
-        public int LeaderboardId { get; set; }
-        public bool Ranked { get; set; }
-        public string SongHash { get; set; }
-        public int Difficultly { get; set; }
-        public string GameMode { get; set; }
-        public DateTime? RankedDate { get; set; }
-        public double MaxPP { get; set; }
-        public int MaxScore { get; set; }
-        public double Stars { get; set; }
-        public bool PositiveModifiers { get; set; }
+        public int LeaderboardId;
+        public bool Ranked;
+        public string SongHash;
+        public int Difficultly;
+        public string GameMode;
+        public DateTime? RankedDate;
+        public double MaxPp;
+        public int MaxScore;
+        public double Stars;
+        public bool PositiveModifiers;
 
         public static LeaderboardInfo Create(ScoreSaberUtils.ScoreSaberLeaderboardEntry entry)
         {
             DateTime? rankedDate = null;
             if (entry.Leaderboard.RankedDate != null) rankedDate = DateTime.Parse(entry.Leaderboard.RankedDate);
                 
-            double maxPp = entry.Leaderboard.MaxPP;
-            if (maxPp == -1) maxPp = entry.Score.PP * entry.Leaderboard.MaxScore / entry.Score.BaseScore;
+            double maxPp = entry.Leaderboard.MaxPp;
+            if (maxPp == -1) maxPp = entry.Score.Pp * entry.Leaderboard.MaxScore / entry.Score.BaseScore;
             
             return new LeaderboardInfo
             {
@@ -163,7 +166,7 @@ namespace ScoreList.Scores
                 Difficultly = entry.Leaderboard.Difficulty.Difficulty,
                 GameMode = entry.Leaderboard.Difficulty.GameMode,
                 RankedDate = rankedDate,
-                MaxPP = maxPp,
+                MaxPp = maxPp,
                 MaxScore = entry.Leaderboard.MaxScore,
                 Stars = entry.Leaderboard.Stars,
                 PositiveModifiers = entry.Leaderboard.PositiveModifiers,
@@ -173,12 +176,12 @@ namespace ScoreList.Scores
 
     public class LeaderboardMapInfo
     {
-        public string SongHash { get; set; }
-        public string SongName { get; set; }
-        public string SongSubName { get; set; }
-        public string SongAuthorName { get; set; }
-        public string LevelAuthorName { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public string SongHash;
+        public string SongName;
+        public string SongSubName;
+        public string SongAuthorName;
+        public string LevelAuthorName;
+        public DateTime CreatedDate;
 
         public static LeaderboardMapInfo Create(ScoreSaberUtils.ScoreSaberLeaderboardInfo info) => 
             new LeaderboardMapInfo {

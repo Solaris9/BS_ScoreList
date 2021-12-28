@@ -9,26 +9,27 @@ using BeatSaberMarkupLanguage;
 using ScoreList.Utils;
 using SiraUtil.Logging;
 
+#pragma warning disable CS0414
+#pragma warning disable CS0169
+#pragma warning disable CS0649
+
 namespace ScoreList.UI
 {
     [HotReload(RelativePathToLayout = @"Views\ScoreDetail.bsml")]
     [ViewDefinition("ScoreList.UI.Views.ScoreDetail.bsml")]
     class DetailViewController : BSMLAutomaticViewController
     {
-        //[Inject] private readonly LevelSelectionUtils _levelSelectionUtils;
-        [Inject] private readonly SiraLog _siraLog;
-        [Inject] private readonly ScoreManager _scoreManager;
+        bool canPlay = true;
 
-        private bool canPlay = true;
+        LeaderboardInfo _leaderboard;
+        LeaderboardMapInfo _info;
+        
+        [Inject] readonly LevelSelectionUtils _levelSelectionUtils;
+        [Inject] readonly SiraLog _siraLog;
+        [Inject] readonly ScoreManager _scoreManager;
 
-        private LeaderboardInfo _leaderboard;
-        private LeaderboardMapInfo _info;
-
-        [UIComponent("actionButton")]
-        public Button actionButton;
-
-        [UIComponent("title")]
-        public TextMeshProUGUI title;
+        [UIComponent("actionButton")] readonly Button actionButton;
+        [UIComponent("title")] readonly TextMeshProUGUI title;
 
         public async Task Load(LeaderboardScore score)
         {
@@ -53,10 +54,9 @@ namespace ScoreList.UI
             _info = null;
         }
 
-        
         //TODO: Need to fix this shit too.
         [UIAction("StartLevel")]
-        public async Task StartLevel()
+        async Task StartLevel()
         {
             /*if (!canPlay)
             {
@@ -65,13 +65,12 @@ namespace ScoreList.UI
                 return;
             }*/
             
-            /*await _levelSelectionUtils.StartSoloLevel(
+            await _levelSelectionUtils.StartSoloLevel(
                 _info.SongHash,
                 _leaderboard.Difficultly,
                 () => { },
                 (so, results) => { }
-            );*/
-            
+            );
         }
     }
 }
