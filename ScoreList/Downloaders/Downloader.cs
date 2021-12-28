@@ -52,14 +52,12 @@ namespace ScoreList.Downloaders
 
             if (www == null)
             {
-                return default(T);
+                return default;
             }
 
             try
             {
-                T response = JsonConvert.DeserializeObject<T>(www.downloadHandler.text);
-
-                return response;
+                return JsonConvert.DeserializeObject<T>(www.downloadHandler.text);;
             }
             catch (Exception e)
             {
@@ -93,7 +91,7 @@ namespace ScoreList.Downloaders
             Action<float> progressCallback = null)
         {
             var www = UnityWebRequest.Get(url);
-            www.SetRequestHeader("User-Agent", USER_AGENT);
+            // www.SetRequestHeader("User-Agent", USER_AGENT);
             www.timeout = 15;
 #if DEBUG
             _siraLog.Debug($"Making web request: {url}");

@@ -15,7 +15,7 @@ namespace ScoreList.Downloaders
     {
         private const string API_URL = "https://scoresaber.com/api/";
         private const string PLAYER = "player/";
-        private const string SCORES = "scores";
+        private const string SCORES = "/scores";
 
         private const string CDN_URL = "https://cdn.scoresaber.com/";
         private const string COVERS = "covers/";
@@ -33,10 +33,10 @@ namespace ScoreList.Downloaders
             _user = user;
         }
 
-        private int GetUserID()
+        private async Task<string> GetUserID()
         {
-            var userID = _user.GetUserInfo().Id;
-            return userID;
+            var userID = await _user.GetUserInfo();
+            return userID.platformUserId;
         }
 
         public async Task<Sprite> GetCoverImageAsync(string hash, CancellationToken cancellationToken)
@@ -61,14 +61,14 @@ namespace ScoreList.Downloaders
         private async Task<ScoreSaberUtils.ScoreSaberScores> GetScores(
             int page, string sort, CancellationToken cancellationToken)
         {
-            var id = GetUserID();
+            var id = await GetUserID();
             string url = API_URL + PLAYER + id + SCORES + $"?page{page}&sort={sort}&limit=100";
             return await MakeJsonRequestAsync<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken);
         }
 
         public async Task CacheScores(int current, CancellationToken cancellationToken)
         {
-            var data = await GetScores(current + 1, "recent",  cancellationToken);
+            var data = await GetScores(current, "recent",  cancellationToken);
 
             var maps = data.PlayerScores.Select(e => LeaderboardMapInfo.Create(e.Leaderboard));
             var leaderboards = data.PlayerScores.Select(LeaderboardInfo.Create);
@@ -77,6 +77,8 @@ namespace ScoreList.Downloaders
             await _scoreManager.InsertScores(scores.ToArray());
             await _scoreManager.InsertLeaderboards(leaderboards.ToArray());
             await _scoreManager.InsertMaps(maps.ToArray());
+
+            await _scoreManager.Write();
                 
             // delay so there's a max of 400 requests within a minute
             await Task.Delay(200, cancellationToken);

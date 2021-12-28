@@ -23,9 +23,8 @@ namespace ScoreList
         {
             zenjector.UseLogger(logger);
             zenjector.Install<AppInstaller>(Location.App);
-            zenjector.Install<MenuInstallers>(Location.Menu);
-
-            ScoreListUI.instance.Setup();
+            zenjector.Install<MenuInstaller>(Location.Menu);
+            
             Instance = this;
         }
     }

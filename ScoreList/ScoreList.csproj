@@ -46,19 +46,9 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BeatmapCore.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="BeatSaverSharp">
-      <Private>False</Private>
-      <HintPath>$(BeatSaberDir)\Libs\BeatSaverSharp.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="BSML">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Plugins\BSML.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="BS_Utils">
-      <Private>False</Private>
-      <HintPath>$(BeatSaberDir)\Plugins\BS_Utils.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Colors, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -79,10 +69,8 @@
       <HintPath>$(BeatSaberDir)\Libs\Newtonsoft.Json.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="SiraUtil">
-      <Private>False</Private>
-      <HintPath>$(BeatSaberDir)\Plugins\SiraUtil.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SiraUtil, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>F:\SteamLibrary\steamapps\common\Beat Saber\Plugins\SiraUtil.dll</HintPath>
     </Reference>
     <Reference Include="SongCore">
       <Private>False</Private>
@@ -154,10 +142,8 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Zenject, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <Private>False</Private>
-      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Zenject, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>F:\SteamLibrary\steamapps\common\Beat Saber\Beat Saber_Data\Managed\Zenject.dll</HintPath>
     </Reference>
     <Reference Include="Zenject-usage, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <Private>False</Private>
@@ -180,7 +166,7 @@
     <Compile Include="UI\DetailViewController.cs" />
     <Compile Include="UI\FilterViewController.cs" />
     <Compile Include="UI\ScoreViewController.cs" />
-    <Compile Include="UI\ScoreListUI.cs" />
+    <Compile Include="UI\FlowCoordinator.cs" />
     <Compile Include="Utils\CSExtensions.cs" />
     <Compile Include="Utils\LevelSelectionUtils.cs" />
     <Compile Include="Utils\ScoreSaberUtils.cs" />

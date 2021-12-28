@@ -1,18 +1,13 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
-using BeatSaverSharp;
 using ScoreList.Scores;
 using System.Threading.Tasks;
 using Zenject;
-using SongCore;
 using UnityEngine.UI;
-using UnityEngine;
 using TMPro;
 using BeatSaberMarkupLanguage;
-using System.Linq;
 using ScoreList.Utils;
 using SiraUtil.Logging;
-using SiraUtil.Tools;
 
 namespace ScoreList.UI
 {
@@ -20,9 +15,9 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.ScoreDetail.bsml")]
     class DetailViewController : BSMLAutomaticViewController
     {
-        private readonly LevelSelectionUtils _levelSelectionUtils;
-        private readonly SiraLog _siraLog;
-        private readonly ScoreManager _scoreManager;
+        //[Inject] private readonly LevelSelectionUtils _levelSelectionUtils;
+        [Inject] private readonly SiraLog _siraLog;
+        [Inject] private readonly ScoreManager _scoreManager;
 
         private bool canPlay = true;
 
@@ -34,18 +29,6 @@ namespace ScoreList.UI
 
         [UIComponent("title")]
         public TextMeshProUGUI title;
-
-        [Inject]
-        public DetailViewController(
-            LevelSelectionUtils levelSelectionUtils,
-            SiraLog siraLog,
-            ScoreManager scoreManager
-        )
-        {
-            _levelSelectionUtils = levelSelectionUtils;
-            _siraLog = siraLog;
-            _scoreManager = scoreManager;
-        }
 
         public async Task Load(LeaderboardScore score)
         {
@@ -82,12 +65,12 @@ namespace ScoreList.UI
                 return;
             }*/
             
-            await _levelSelectionUtils.StartSoloLevel(
+            /*await _levelSelectionUtils.StartSoloLevel(
                 _info.SongHash,
                 _leaderboard.Difficultly,
                 () => { },
                 (so, results) => { }
-            );
+            );*/
             
         }
     }

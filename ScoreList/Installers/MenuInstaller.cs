@@ -1,10 +1,9 @@
 ﻿using ScoreList.UI;
-using SiraUtil;
 using Zenject;
 
 namespace ScoreList.Installers
 {
-    public class MenuInstallers : Installer
+    public class MenuInstaller : Installer
     {
         public override void InstallBindings()
         {
@@ -12,6 +11,8 @@ namespace ScoreList.Installers
             Container.Bind<ScoreViewController>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<DetailViewController>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<ConfigViewController>().FromNewComponentAsViewController().AsSingle();
+            
+            Container.Bind<IInitializable>().To<ScoreListCoordinator>().FromNewComponentOnNewGameObject().AsSingle();
         }
     }
 }

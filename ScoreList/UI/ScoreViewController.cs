@@ -5,7 +5,6 @@ using HMUI;
 using ScoreList.Scores;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using ScoreList.Configuration;
 using SiraUtil.Logging;
@@ -75,17 +74,10 @@ namespace ScoreList.UI {
     [ViewDefinition("ScoreList.UI.Views.ScoreList.bsml")]
     public class ScoreViewController : BSMLAutomaticViewController {
         public event Action<int> DidSelectSong;
-        private readonly ScoreManager _scoreManager;
-        private readonly SiraLog _logger;
-        private readonly PluginConfig _config;
-
-        [Inject]
-        public ScoreViewController(ScoreManager scoreManager, SiraLog logger, PluginConfig config)
-        {
-            _scoreManager = scoreManager;
-            _logger = logger;
-            _config = config;
-        }
+        
+        [Inject] private readonly ScoreManager _scoreManager;
+        [Inject] private readonly SiraLog _logger;
+        // [Inject] private readonly PluginConfig _config;
 
         [UIComponent("list")]
         public CustomCellListTableData scoreList;
@@ -101,7 +93,7 @@ namespace ScoreList.UI {
                 new OrderFilter("DESC")
             };
 
-            FilterScores(filters);
+            // FilterScores(filters);
         }
 
         [UIAction("SongSelect")]

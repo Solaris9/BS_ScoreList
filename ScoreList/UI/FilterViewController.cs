@@ -49,13 +49,12 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.ScoreFilters.bsml")]
     public class FilterViewController : BSMLAutomaticViewController
     {
+        [Inject]
         private readonly ScoreManager _scoresManager;
 
-        [Inject]
-        public FilterViewController(ScoreManager scoresManager)
+        [UIAction("#post-parse")]
+        public void SetupUI()
         {
-            _scoresManager = scoresManager;
-
             var baseFilters = new List<BaseFilter> { new SortPpFilter() };
             var score = _scoresManager.Query(baseFilters).GetAwaiter().GetResult();
             if (score.Count > 0) maxPp = (int)score.First().PP;
@@ -145,8 +144,6 @@ namespace ScoreList.UI
             starsTab.IsVisible = type == "Ranked";
             accuracyTab.IsVisible = type == "Ranked";
             ppTab.IsVisible = type == "Ranked";
-
-            
             
             if (type == "Ranked") sortChoices.AddRange(new[] { "PP", "Stars", "Accuracy" });
             else sortChoices.RemoveRange(new object[] { "PP", "Stars", "Accuracy" });

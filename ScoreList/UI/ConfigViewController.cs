@@ -17,24 +17,12 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.Config.bsml")]
     public class ConfigViewController : BSMLAutomaticViewController
     {
-        private ScoreManager _scoreManager;
-        private ScoreSaberDownloader _downloader;
-        private PluginConfig _config;
+        [Inject] private ScoreManager _scoreManager;
+        [Inject] private ScoreSaberDownloader _downloader;
+        // [Inject] private PluginConfig _config;
         
         [UIComponent("cache-status")] public TextMeshProUGUI cacheStatus;
         [UIComponent("cache-button")] public Button cacheButton;
-
-        [Inject]
-        public ConfigViewController(
-            ScoreManager scoreManager,
-            ScoreSaberDownloader downloader,
-            PluginConfig config
-        )
-        {
-            _scoreManager = scoreManager;
-            _downloader = downloader;
-            _config = PluginConfig.Load();
-        }
 
         [UIAction("#post-parse")]
         internal void SetupUI()
@@ -63,13 +51,14 @@ namespace ScoreList.UI
 
             for (; current < max; current++)
             {
-                await _downloader.CacheScores(current, cancellationToken);
+                await _downloader.CacheScores(current + 1, cancellationToken);
                 cacheStatus.text = $"{current + 1}/{max}";
             }
             
             _scoreManager.Clean();
 
             cacheStatus.text = "Updated scores";
+            cacheButton.SetButtonText("Up to date");
             cacheButton.interactable = false;
 
             /*_config.Complete = true;
