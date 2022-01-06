@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace ScoreList.Scores 
 {
+    [Flags]
     public enum Modifiers
     {
         NF = 1,

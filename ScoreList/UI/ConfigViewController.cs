@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
@@ -19,12 +21,17 @@ namespace ScoreList.UI
     public class ConfigViewController : BSMLAutomaticViewController
     {
         [Inject] readonly ScoreManager _scoreManager;
-        [Inject] readonly ScoreSaberDownloader _downloader;
-        [Inject] private PluginConfig _config;
+        readonly ScoreSaberDownloader _downloader;
+        private PluginConfig _config;
         
         [UIComponent("cache-status")] readonly TextMeshProUGUI cacheStatus;
         [UIComponent("current-status")] readonly TextMeshProUGUI currentStatus;
         [UIComponent("cache-button")] readonly Button cacheButton;
+
+        public ConfigViewController(Config config)
+        {
+            _config = _config;
+        }
 
         [UIAction("#post-parse")]
         void SetupUI()

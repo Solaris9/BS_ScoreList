@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
   "id": "ScoreList",
   "name": "ScoreList",
-  "author": "",
+  "author": "Solaris, Raine",
   "version": "0.0.1",
   "description": "",
   "gameVersion": "1.19.0",
@@ -10,7 +10,9 @@
     "BSIPA": "^4.2.1",
     "BeatSaberMarkupLanguage": "^1.6.1",
     "SongDataCore": "^1.4.6",
-    "SiraUtil": "^3.0.2"
+    "SiraUtil": "^3.0.0"
   },
-  "features": []
+  "links": {
+    "github": "https://github.com/solaris9/BS_ScoreList"
+  }
 }

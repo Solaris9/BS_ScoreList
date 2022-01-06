@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace ScoreList.Downloaders
 {
-    public class ScoreSaberDownloader : Downloader
+    internal class ScoreSaberDownloader : Downloader
     {
         const string API_URL = "https://scoresaber.com/api/";
         const string PLAYER = "player/";
@@ -29,7 +29,7 @@ namespace ScoreList.Downloaders
         private readonly IPlatformUserModel _user;
         private readonly PluginConfig _config;
 
-        public ScoreSaberDownloader(
+        internal ScoreSaberDownloader(
             SiraLog siraLog,
             IPlatformUserModel user,
             ScoreManager scoreManager,
