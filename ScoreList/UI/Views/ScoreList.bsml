@@ -40,8 +40,8 @@
 				<horizontal id='accuracy-layout' active='false' horizontal-fit='PreferredSize' spacing='2'>
 					<text text='Accuracy' font-size='2'/>
 					<horizontal>
-						<text text='~accuracy' font-size='2'/>
-						<text text='% ' font-size='2'/>
+						<text id='accuracy' font-size='2'/>
+						<text text='%' font-size='2'/>
 					</horizontal>
 				</horizontal>
 			</vertical>

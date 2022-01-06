@@ -112,9 +112,9 @@ namespace ScoreList.UI
         void ApplyFilters()
         {
             Filters.AddRange(new[]{
-                new OrderFilter((string) _order.Value),
                 new RankedFilter((string) _ranked.Value == "Ranked"),
-                GetFilter((string) _sort.Value)
+                GetFilter((string) _sort.Value),
+                new OrderFilter((string) _order.Value),
             });
 
             ScoreListCoordinator.Instance.ShowFilteredScores(Filters);

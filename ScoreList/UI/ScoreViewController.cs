@@ -37,10 +37,10 @@ namespace ScoreList.UI
         [UIComponent("stars")] readonly TextMeshProUGUI stars;
         [UIComponent("accuracy-layout")] readonly LayoutElement accuracyLayout;
         [UIComponent("pp-layout")] readonly LayoutElement ppLayout;
+        [UIComponent("accuracy")] readonly TextMeshProUGUI accuracy;
 
         [UIComponent("max-pp")] readonly TextMeshProUGUI maxPP;
         [UIComponent("pp")] readonly TextMeshProUGUI pp;
-        [UIValue("accuracy")] string accuracy;
 
         public ScoreInfoCellWrapper(LeaderboardScore score, LeaderboardInfo leaderboard, LeaderboardMapInfo info)
         {
@@ -73,7 +73,7 @@ namespace ScoreList.UI
             if (_leaderboard.Ranked)
             {
                 stars.text = _leaderboard.Stars.ToString("#.00★");
-                accuracy = (100f * _score.BaseScore / _leaderboard.MaxScore).ToString("0.##");
+                accuracy.text = (100f * _score.BaseScore / _leaderboard.MaxScore).ToString("0.##");
                 maxPP.text = _leaderboard.MaxPp.ToString("#.00");
                 pp.text = _score.Pp.ToString("#.00");
             }
