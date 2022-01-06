@@ -40,9 +40,9 @@ namespace ScoreList.UI
 
         public FilterListCellWrapper(FilterViewController controller, string name, string data) 
         {
-            this._controller = controller;
-            this._name = name;
-            this._data = data;
+            _controller = controller;
+            _name = name;
+            _data = data;
         }
     }
 

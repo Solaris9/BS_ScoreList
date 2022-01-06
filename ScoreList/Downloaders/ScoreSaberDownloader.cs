@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ScoreList.Configuration;
 using ScoreList.Scores;
 using ScoreList.Utils;
 using SiraUtil.Logging;
 using UnityEngine;
-using Zenject;
+
 #pragma warning disable CS0649
 
 namespace ScoreList.Downloaders
@@ -26,12 +27,18 @@ namespace ScoreList.Downloaders
         private readonly SiraLog _siraLog;
         private readonly ScoreManager _scoreManager;
         private readonly IPlatformUserModel _user;
-        
-        public ScoreSaberDownloader(SiraLog siraLog, IPlatformUserModel user, ScoreManager scoreManager) : base(siraLog)
-        {
+        private readonly PluginConfig _config;
+
+        public ScoreSaberDownloader(
+            SiraLog siraLog,
+            IPlatformUserModel user,
+            ScoreManager scoreManager,
+            PluginConfig config
+        ) : base(siraLog) {
             _siraLog = siraLog;
             _scoreManager = scoreManager;
             _user = user;
+            _config = config;
         }
 
         async Task<string> GetUserID()
@@ -68,19 +75,29 @@ namespace ScoreList.Downloaders
             return await MakeJsonRequestAsync<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken, progressCallback);
         }
 
+        // TODO: improve score caching
         public async Task CacheScores(int current, CancellationToken cancellationToken, Action<float> progressCallback)
         {
             var data = await GetScores(current, "recent",  cancellationToken, progressCallback);
+            
+            var leaderboardScores = data.PlayerScores.Select(LeaderboardScore.Create);
+            var scores = leaderboardScores as LeaderboardScore[] ?? leaderboardScores.ToArray();
+
+            /*if (!scores.All(s => s.TimeSet == _config.LastCachedScore))
+            {
+                
+            }*/
 
             var maps = data.PlayerScores.Select(e => LeaderboardMapInfo.Create(e.Leaderboard));
             var leaderboards = data.PlayerScores.Select(LeaderboardInfo.Create);
-            var scores = data.PlayerScores.Select(LeaderboardScore.Create);
-
+            
             await _scoreManager.InsertScores(scores.ToArray());
             await _scoreManager.InsertLeaderboards(leaderboards.ToArray());
             await _scoreManager.InsertMaps(maps.ToArray());
 
             await _scoreManager.Write();
+            
+            // _config.LastCachedScore = scores.Last().TimeSet;
                 
             // delay so there's a max of 400 requests within a minute
             await Task.Delay(200, cancellationToken);

@@ -1,8 +1,10 @@
 ﻿using IPA;
 using System.IO;
 using IPA.Config;
+using IPA.Config.Stores;
 using IPA.Loader;
 using IPA.Utilities;
+using ScoreList.Configuration;
 using SiraUtil.Zenject;
 using ScoreList.Installers;
 using IPALogger = IPA.Logging.Logger;
@@ -19,9 +21,9 @@ namespace ScoreList
         public void Init(Zenjector zenjector, IPALogger logger, PluginMetadata metadata, Config config)
         {
             Version = metadata.HVersion.ToString();
-            
+
             zenjector.UseLogger(logger);
-            zenjector.Install<AppInstaller>(Location.App);
+            zenjector.Install<AppInstaller>(Location.App, config.Generated<PluginConfig>());
             zenjector.Install<MenuInstaller>(Location.Menu);
         }
     }

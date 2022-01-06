@@ -39,10 +39,11 @@ namespace ScoreList.Utils
             var colorSchemesSettings = _playerDataModel.playerData.colorSchemesSettings;
             var overrideColorScheme = colorSchemesSettings.overrideDefaultColors ? colorSchemesSettings.GetSelectedColorScheme() : null;
             
+            // TODO: Fix
             _transitions.StartStandardLevel(
                 "SoloStandard",
                 difficultyBeatmap,
-                null,
+                beatmapLevelResult.beatmapLevel,
                 overrideEnvironmentSettings,
                 overrideColorScheme,
                 beatmapModifiers,

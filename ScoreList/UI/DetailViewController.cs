@@ -19,7 +19,7 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.ScoreDetail.bsml")]
     class DetailViewController : BSMLAutomaticViewController
     {
-        bool canPlay = true;
+        bool _canPlay = true;
 
         LeaderboardInfo _leaderboard;
         LeaderboardMapInfo _info;
@@ -43,13 +43,13 @@ namespace ScoreList.UI
             if (!SongDataCore.Plugin.Songs.Data.Songs.ContainsKey(_info.SongHash))
             {
                 actionButton.SetButtonText("Download");
-                canPlay = false;
+                _canPlay = false;
             }
         }
 
         public void Reset()
         {
-            canPlay = true;
+            _canPlay = true;
             _leaderboard = null;
             _info = null;
         }

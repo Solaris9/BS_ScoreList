@@ -6,10 +6,12 @@ using ScoreList.Scores;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ScoreList.Configuration;
 using SiraUtil.Logging;
 using TMPro;
 using UnityEngine.UI;
 using Zenject;
+
 #pragma warning disable CS0649
 
 namespace ScoreList.UI
@@ -17,6 +19,9 @@ namespace ScoreList.UI
     public class ScoreInfoCellWrapper
     {
         public readonly int ScoreId;
+        readonly LeaderboardScore _score;
+        readonly LeaderboardInfo _leaderboard;
+        readonly LeaderboardMapInfo _info;
         
         [UIValue("icon")] readonly string icon;
 
@@ -33,12 +38,16 @@ namespace ScoreList.UI
         [UIComponent("accuracy-layout")] readonly LayoutElement accuracyLayout;
         [UIComponent("pp-layout")] readonly LayoutElement ppLayout;
 
-        [UIValue("accuracy")] readonly string accuracy;
-        [UIValue("max-pp")] readonly string maxPP;
-        [UIValue("pp")] readonly string pp;
+        [UIComponent("max-pp")] readonly TextMeshProUGUI maxPP;
+        [UIComponent("pp")] readonly TextMeshProUGUI pp;
+        [UIValue("accuracy")] string accuracy;
 
         public ScoreInfoCellWrapper(LeaderboardScore score, LeaderboardInfo leaderboard, LeaderboardMapInfo info)
         {
+            _score = score;
+            _leaderboard = leaderboard;
+            _info = info;
+                
             ScoreId = score.ScoreId;
             icon = Path.Combine(Plugin.ModFolder, "icons", info.SongHash);
 
@@ -47,27 +56,29 @@ namespace ScoreList.UI
 
             artist = info.SongAuthorName;
             mapper = info.LevelAuthorName;
-
+                
             difficulty = SongUtils.GetDifficultyDisplay(leaderboard.Difficultly);
             rank = score.Rank.ToString();
             modifiers = string.Join(", ", SongUtils.FormatModifiers(score.Modifiers));
             missedNotes = score.MissedNotes.ToString();
+        }
 
-            if (leaderboard.Ranked)
+        [UIAction("#post-parse")]
+        internal void SetupUI()
+        {
+            ppLayout.gameObject.SetActive(_leaderboard.Ranked);
+            accuracyLayout.gameObject.SetActive(_leaderboard.Ranked);
+            stars.gameObject.SetActive(_leaderboard.Ranked);
+            
+            if (_leaderboard.Ranked)
             {
-                ppLayout.enabled = true;
-                accuracyLayout.enabled = true;
-
-                stars.text = leaderboard.Stars.ToString("#.00★");
-                accuracy = (100f * score.BaseScore / leaderboard.MaxScore).ToString("0.##");
-                maxPP = leaderboard.MaxPp.ToString("#.00");
-                pp = score.Pp.ToString("#.00");
-            }
-            else
-            {
-                stars.enabled = false;
+                stars.text = _leaderboard.Stars.ToString("#.00★");
+                accuracy = (100f * _score.BaseScore / _leaderboard.MaxScore).ToString("0.##");
+                maxPP.text = _leaderboard.MaxPp.ToString("#.00");
+                pp.text = _score.Pp.ToString("#.00");
             }
         }
+        
     }
 
     [HotReload(RelativePathToLayout = @"Views\ScoreList.bsml")]
@@ -78,7 +89,6 @@ namespace ScoreList.UI
         
         [Inject] private readonly ScoreManager _scoreManager;
         [Inject] private readonly SiraLog _siraLog;
-        // [Inject] private readonly PluginConfig _config;
 
         [UIComponent("list")]
         public CustomCellListTableData scoreList;
@@ -86,8 +96,6 @@ namespace ScoreList.UI
         [UIAction("#post-parse")]
         internal void SetupUI()
         {
-            // if (!_config.Complete) return;
-
             var filters = new List<BaseFilter>
             {
                 new SortPpFilter(),

@@ -3,6 +3,7 @@ using System.Threading;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
+using ScoreList.Configuration;
 using ScoreList.Downloaders;
 using ScoreList.Scores;
 using TMPro;
@@ -19,7 +20,7 @@ namespace ScoreList.UI
     {
         [Inject] readonly ScoreManager _scoreManager;
         [Inject] readonly ScoreSaberDownloader _downloader;
-        // [Inject] private PluginConfig _config;
+        [Inject] private PluginConfig _config;
         
         [UIComponent("cache-status")] readonly TextMeshProUGUI cacheStatus;
         [UIComponent("current-status")] readonly TextMeshProUGUI currentStatus;
@@ -28,16 +29,16 @@ namespace ScoreList.UI
         [UIAction("#post-parse")]
         void SetupUI()
         {
-            /*if (_config.Complete)
+            if (_config.Complete)
             {
                 cacheStatus.text = "Updated";
                 cacheButton.interactable = false;
             }
             else
-            {*/
+            {
                 cacheStatus.text = "Not updated";
                 cacheButton.SetButtonText("Not updated");
-            //}
+            }
         }
 
         [UIAction("CacheScores")]
@@ -66,8 +67,7 @@ namespace ScoreList.UI
             cacheButton.SetButtonText("Up to date");
             cacheButton.interactable = false;
 
-            /*_config.Complete = true;
-            _config.Save();*/
+            _config.Complete = true;
         }
     }
 }

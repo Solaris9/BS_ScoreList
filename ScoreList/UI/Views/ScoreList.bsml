@@ -21,9 +21,9 @@
 				<horizontal id='pp-layout' active='false' horizontal-fit='PreferredSize' spacing='2'>
 					<text text='PP' font-size='2'/>
 					<horizontal>
-						<text text='~pp' font-size='2'/>
+						<text id='pp' font-size='2'/>
 						<text text='/' font-size='2'/>
-						<text text='~max-pp' font-size='2'/>
+						<text id='max-pp' font-size='2'/>
 					</horizontal>
 				</horizontal>
 

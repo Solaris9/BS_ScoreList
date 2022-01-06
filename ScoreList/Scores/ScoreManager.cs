@@ -5,12 +5,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using ScoreList.Utils;
+using SiraUtil.Logging;
 
 namespace ScoreList.Scores
 {
     public class ScoreManager
     {
         static LeaderboardData _data;
+        readonly SiraLog _logger;
+
+        public ScoreManager(SiraLog logger)
+        {
+            _logger = logger;
+        }
         
         readonly string _filePath = Path.Combine(Plugin.ModFolder, "data.json");
 
@@ -65,12 +72,14 @@ namespace ScoreList.Scores
         async Task<LeaderboardData> Read()
         {
             if (!File.Exists(_filePath)) return new LeaderboardData();
-
-            using (var sw = new StreamReader(_filePath))
+            
+            /*using (var sw = new StreamReader(_filePath))
             {
                 var content = await sw.ReadToEndAsync();
                 return JsonConvert.DeserializeObject<LeaderboardData>(content);
-            }
+            }*/
+
+            return JsonConvert.DeserializeObject<LeaderboardData>(File.ReadAllText(_filePath));
         }
 
         public async Task<List<LeaderboardScore>> Query(List<BaseFilter> filters)
@@ -154,7 +163,8 @@ namespace ScoreList.Scores
         {
             DateTime? rankedDate = null;
             if (entry.Leaderboard.RankedDate != null) rankedDate = DateTime.Parse(entry.Leaderboard.RankedDate);
-                
+
+            // TODO: Fix this
             double maxPp = entry.Leaderboard.MaxPp;
             if (maxPp == -1) maxPp = entry.Score.Pp * entry.Leaderboard.MaxScore / entry.Score.BaseScore;
             
