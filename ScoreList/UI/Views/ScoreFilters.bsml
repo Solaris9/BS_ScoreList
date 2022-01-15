@@ -15,8 +15,8 @@
 			<vertical pad-bottom='15'>
 				<tab id='stars-tab' tags='filters' tab-name='Stars'>
 					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
-						<slider-setting id='filter-stars-minimum' text='Minimum amount of stars' increment='0.5' min='0' max='14' integer-only='false'/>
-						<slider-setting id='filter-stars-maximum' text='Maximum amount of stars' increment='0.5' min='0' max='14' integer-only='false' value='max-stars'/>
+						<slider-setting id='filter-stars-minimum' text='Minimum amount of stars' increment='0.5' min='0' max='~max-stars' integer-only='false'/>
+						<slider-setting id='filter-stars-maximum' text='Maximum amount of stars' increment='0.5' min='0' max='~max-stars' integer-only='false' value='max-stars'/>
 					</vertical>
 				</tab>
 				

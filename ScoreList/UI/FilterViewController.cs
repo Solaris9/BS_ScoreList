@@ -55,9 +55,26 @@ namespace ScoreList.UI
         [UIAction("#post-parse")]
         void SetupUI()
         {
-            var baseFilters = new List<BaseFilter> { new SortPpFilter() };
-            var score = _scoresManager.Query(baseFilters).GetAwaiter().GetResult();
-            if (score.Count > 0) _maxPp = (int)score.First().Pp;
+            var data = _scoresManager.Read().GetAwaiter().GetResult();
+            var scores = data.Scores;
+
+            if (scores.Count > 0)
+            {
+                new RankedFilter(true).Apply(ref scores, data);
+                // max pp
+                
+                new SortPpFilter().Apply(ref scores, null);
+                _maxPp = (int)scores.First().Pp;
+                
+                // max stars
+
+                new SortStarsFilter().Apply(ref scores, data);
+                var id = scores.First().LeaderboardId;
+                var info = _scoresManager.GetLeaderboard(id).GetAwaiter().GetResult();
+                _maxStars = (float) info.Stars;
+
+                _scoresManager.Clean();
+            }
         }
         
         // components
@@ -177,7 +194,7 @@ namespace ScoreList.UI
             {
                 case "Stars":
                     float? starsMaximum = null;
-                    if (_filterStarsMaximum.Value != 14f) starsMaximum = _filterStarsMaximum.Value;
+                    if (_filterStarsMaximum.Value != _maxStars) starsMaximum = _filterStarsMaximum.Value;
 
                     float? starsMinimum = null;
                     if (_filterStarsMinimum.Value != 0f) starsMinimum = _filterStarsMinimum.Value;
@@ -313,9 +330,9 @@ namespace ScoreList.UI
 
         [UIValue("max-year")] readonly int _maxYear = DateTime.Today.Year;
         [UIValue("max-month")] readonly int _maxMonth = 12;
-        [UIValue("max-stars")] readonly float _maxStars = 14f;
         [UIValue("max-accuracy")] readonly int _maxAccuracy = 100;
         [UIValue("max-misses")] readonly int _maxMisses = 100;
+        [UIValue("max-stars")] float _maxStars;
         [UIValue("max-pp")] int _maxPp;
     }
 }

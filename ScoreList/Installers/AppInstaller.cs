@@ -1,14 +1,13 @@
-﻿using IPA.Loader;
-using ScoreList.Configuration;
+﻿using ScoreList.Configuration;
 using ScoreList.Downloaders;
 using ScoreList.Scores;
 using Zenject;
 
 namespace ScoreList.Installers
 {
-    internal class AppInstaller : MonoInstaller
+    internal class AppInstaller : Installer
     {
-        private PluginConfig _config;
+        private readonly PluginConfig _config;
         
         public AppInstaller(PluginConfig config)
         {
@@ -17,7 +16,7 @@ namespace ScoreList.Installers
         
         public override void InstallBindings()
         {
-            Container.BindInstance(_config).AsSingle();
+            Container.Bind<PluginConfig>().FromInstance(_config).AsSingle();
             Container.Bind<ScoreSaberDownloader>().AsSingle();
             Container.Bind<ScoreManager>().AsSingle();
         }

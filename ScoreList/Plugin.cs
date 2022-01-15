@@ -23,6 +23,7 @@ namespace ScoreList
             Version = metadata.HVersion.ToString();
 
             zenjector.UseLogger(logger);
+            
             zenjector.Install<AppInstaller>(Location.App, config.Generated<PluginConfig>());
             zenjector.Install<MenuInstaller>(Location.Menu);
         }

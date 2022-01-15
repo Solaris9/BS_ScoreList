@@ -69,7 +69,7 @@ namespace ScoreList.Scores
             _data = null;
         }
 
-        async Task<LeaderboardData> Read()
+        public async Task<LeaderboardData> Read()
         {
             if (!File.Exists(_filePath)) return new LeaderboardData();
             
@@ -164,9 +164,8 @@ namespace ScoreList.Scores
             DateTime? rankedDate = null;
             if (entry.Leaderboard.RankedDate != null) rankedDate = DateTime.Parse(entry.Leaderboard.RankedDate);
 
-            // TODO: Fix this
             double maxPp = entry.Leaderboard.MaxPp;
-            if (maxPp == -1) maxPp = entry.Score.Pp * entry.Leaderboard.MaxScore / entry.Score.BaseScore;
+            if (maxPp == -1) maxPp = 42.114296 * entry.Leaderboard.Stars * 1.5;
             
             return new LeaderboardInfo
             {

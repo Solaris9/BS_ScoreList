@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using IPA.Loader;
 using Newtonsoft.Json;
 using ScoreList.Utils;
 using SiraUtil.Logging;
@@ -75,7 +74,7 @@ namespace ScoreList.Downloaders
             }
         }
 
-        private async Task<UnityWebRequest> MakeRequestAsync(
+        internal async Task<UnityWebRequest> MakeRequestAsync(
             string url, CancellationToken cancellationToken, Action<float> progressCallback = null)
         {
             var www = UnityWebRequest.Get(url);

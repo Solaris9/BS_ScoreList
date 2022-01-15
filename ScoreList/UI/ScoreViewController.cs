@@ -5,8 +5,7 @@ using HMUI;
 using ScoreList.Scores;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using ScoreList.Configuration;
+using ScoreList.Downloaders;
 using SiraUtil.Logging;
 using TMPro;
 using UnityEngine.UI;
@@ -22,8 +21,7 @@ namespace ScoreList.UI
         readonly LeaderboardScore _score;
         readonly LeaderboardInfo _leaderboard;
         readonly LeaderboardMapInfo _info;
-        
-        [UIValue("icon")] readonly string icon;
+        private readonly ScoreSaberDownloader _downloader;
 
         [UIValue("title")] readonly string title;
         [UIValue("artist")] readonly string artist;
@@ -47,9 +45,8 @@ namespace ScoreList.UI
             _score = score;
             _leaderboard = leaderboard;
             _info = info;
-                
+            
             ScoreId = score.ScoreId;
-            icon = Path.Combine(Plugin.ModFolder, "icons", info.SongHash);
 
             title = info.SongName;
             if (title.Length > 25) title = title.Substring(0, 25) + "...";
@@ -64,7 +61,7 @@ namespace ScoreList.UI
         }
 
         [UIAction("#post-parse")]
-        internal void SetupUI()
+        internal async void SetupUI()
         {
             ppLayout.gameObject.SetActive(_leaderboard.Ranked);
             accuracyLayout.gameObject.SetActive(_leaderboard.Ranked);
@@ -78,7 +75,6 @@ namespace ScoreList.UI
                 pp.text = _score.Pp.ToString("#.00");
             }
         }
-        
     }
 
     [HotReload(RelativePathToLayout = @"Views\ScoreList.bsml")]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using ScoreList.Configuration;
 using ScoreList.Scores;
 using ScoreList.Utils;
@@ -22,12 +23,15 @@ namespace ScoreList.Downloaders
         const string CDN_URL = "https://cdn.scoresaber.com/";
         const string COVERS = "covers/";
 
-        static Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
+        static readonly Dictionary<string, Sprite> SpriteCache = new Dictionary<string, Sprite>();
         
         private readonly SiraLog _siraLog;
         private readonly ScoreManager _scoreManager;
         private readonly IPlatformUserModel _user;
         private readonly PluginConfig _config;
+
+        private bool _wait;
+        private int _duration;
 
         internal ScoreSaberDownloader(
             SiraLog siraLog,
@@ -50,9 +54,9 @@ namespace ScoreList.Downloaders
         public async Task<Sprite> GetCoverImageAsync(string hash, CancellationToken cancellationToken)
         {
             hash = hash.ToUpper();
-            if (_spriteCache.ContainsKey(hash))
+            if (SpriteCache.ContainsKey(hash))
             {
-                return _spriteCache[hash];
+                return SpriteCache[hash];
             }
             
             string url = CDN_URL + COVERS + hash + ".png";
@@ -60,47 +64,68 @@ namespace ScoreList.Downloaders
             var sprite = await MakeImageRequestAsync(url, cancellationToken);
             if (sprite != null)
             {
-                _spriteCache.Add(hash, sprite);
+                SpriteCache.Add(hash, sprite);
             }
 
             return sprite;
         }
         
-        async Task<ScoreSaberUtils.ScoreSaberScores> GetScores(
-            int page, string sort, CancellationToken cancellationToken, Action<float> progressCallback
-            )
+        private async Task<T> MakeScoreRequest<T>(string url, CancellationToken cancellationToken)
         {
-            var id = await GetUserID();
-            string url = API_URL + PLAYER + id + SCORES + $"?page{page}&sort={sort}&limit=100";
-            return await MakeJsonRequestAsync<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken, progressCallback);
+            if (_wait)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(_duration), cancellationToken);
+                _wait = false;
+            }
+
+            var request = await MakeRequestAsync(url, cancellationToken, new Action<float>(_ => { }));
+
+            var remaining = int.Parse(request.GetResponseHeader("x-ratelimit-remaining"));
+            if (remaining == 0)
+            {
+                _wait = true;
+                var resetAt = int.Parse(request.GetResponseHeader("x-ratelimit-reset"));
+                _duration = (int) DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalSeconds - resetAt;
+            }
+            
+            return JsonConvert.DeserializeObject<T>(request.downloadHandler.text);;
         }
 
-        // TODO: improve score caching
-        public async Task CacheScores(int current, CancellationToken cancellationToken, Action<float> progressCallback)
+        private async Task<ScoreSaberUtils.ScoreSaberScoresMetadata> GetMetadata(CancellationToken cancellationToken)
         {
-            var data = await GetScores(current, "recent",  cancellationToken, progressCallback);
-            
-            var leaderboardScores = data.PlayerScores.Select(LeaderboardScore.Create);
-            var scores = leaderboardScores as LeaderboardScore[] ?? leaderboardScores.ToArray();
+            var id = await GetUserID();
+            var url = API_URL + PLAYER + id + SCORES + $"?page=1&sort=recent&limit=100";
+            var data = await MakeScoreRequest<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken);
+            return data.Metadata;
+        }
 
-            /*if (!scores.All(s => s.TimeSet == _config.LastCachedScore))
+        public async Task CacheScores(CancellationToken cancellationToken, Action<int, int> pageCachedCallback)
+        {
+            var id = await GetUserID();
+            var metadata = await GetMetadata(cancellationToken);
+            var pages = (int) Math.Ceiling((double) metadata.Total / metadata.ItemsPerPage);
+
+            for (var page = 1; page < pages; page++)
             {
+                var url = API_URL + PLAYER + id + SCORES + $"?page={page}&sort=recent&limit=100";
+                var data = await MakeScoreRequest<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken);
+        
+                var leaderboardScores = data.PlayerScores.Select(LeaderboardScore.Create);
                 
-            }*/
+                var scores = leaderboardScores as LeaderboardScore[] ?? leaderboardScores.ToArray();
+                var maps = data.PlayerScores.Select(e => LeaderboardMapInfo.Create(e.Leaderboard));
+                var leaderboards = data.PlayerScores.Select(LeaderboardInfo.Create);
+        
+                await _scoreManager.InsertScores(scores.ToArray());
+                await _scoreManager.InsertLeaderboards(leaderboards.ToArray());
+                await _scoreManager.InsertMaps(maps.ToArray());
 
-            var maps = data.PlayerScores.Select(e => LeaderboardMapInfo.Create(e.Leaderboard));
-            var leaderboards = data.PlayerScores.Select(LeaderboardInfo.Create);
-            
-            await _scoreManager.InsertScores(scores.ToArray());
-            await _scoreManager.InsertLeaderboards(leaderboards.ToArray());
-            await _scoreManager.InsertMaps(maps.ToArray());
+                await _scoreManager.Write();
 
-            await _scoreManager.Write();
-            
-            // _config.LastCachedScore = scores.Last().TimeSet;
-                
-            // delay so there's a max of 400 requests within a minute
-            await Task.Delay(200, cancellationToken);
+                pageCachedCallback.Invoke(pages, page);
+
+                if (scores.Any(s => s.TimeSet == _config.LastCachedScore)) break;
+            }
         }
     }
 }

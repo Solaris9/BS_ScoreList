@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
@@ -21,17 +18,12 @@ namespace ScoreList.UI
     public class ConfigViewController : BSMLAutomaticViewController
     {
         [Inject] readonly ScoreManager _scoreManager;
-        readonly ScoreSaberDownloader _downloader;
-        private PluginConfig _config;
+        [Inject] readonly ScoreSaberDownloader _downloader;
+        [Inject] readonly PluginConfig _config;
         
         [UIComponent("cache-status")] readonly TextMeshProUGUI cacheStatus;
         [UIComponent("current-status")] readonly TextMeshProUGUI currentStatus;
         [UIComponent("cache-button")] readonly Button cacheButton;
-
-        public ConfigViewController(Config config)
-        {
-            _config = _config;
-        }
 
         [UIAction("#post-parse")]
         void SetupUI()
@@ -48,25 +40,17 @@ namespace ScoreList.UI
             }
         }
 
+        // TODO: still improve this for updating existing scores
         [UIAction("CacheScores")]
         async void CacheScores()
         {
             var cancellationToken = new CancellationToken();
             
-            var max = 1;
-            var current = 0;
-
-            cacheStatus.text = $"0/{max}";
-
-            for (; current < max; current++)
+            await _downloader.CacheScores(cancellationToken,(pages, page) =>
             {
-                await _downloader.CacheScores(current + 1, cancellationToken, f =>
-                {
-                    currentStatus.text = f.ToString(CultureInfo.InvariantCulture);
-                });
-                cacheStatus.text = $"{current + 1}/{max}";
-            }
-            
+                currentStatus.text = $"{page}/{pages}";
+            });
+
             _scoreManager.Clean();
 
             cacheStatus.text = "Updated scores";
