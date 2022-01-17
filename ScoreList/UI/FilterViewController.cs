@@ -47,25 +47,7 @@ namespace ScoreList.UI
     
     public class PresetListCellWrapper
     {
-        readonly FilterViewController _controller;
-        readonly PluginConfig _config;
-        
-        [UIValue("name")] readonly string _name;
-
-        [UIAction("DeletePreset")]
-        internal void DeletePreset()
-        {
-            _config.Presets.Remove(_name);
-            _controller._presetsList.data.Remove(this);
-            _controller._presetsList.tableView.ReloadData();
-
-            if (_config.Presets.Count == 0) _controller.ToggleNoPresetsText(true);
-        }
-
-        [UIAction("ApplyPreset")]
-        internal void ApplyPreset()
-        {
-            var filterTypes = new List<Type>
+        private static List<Type> _filterTypes = new List<Type>
             {
                 typeof(OrderFilter),
                 typeof(SortAccuracyFilter),
@@ -82,13 +64,33 @@ namespace ScoreList.UI
                 typeof(AccuracyFilter),
                 typeof(PpFilter),
             };
+        
+        readonly FilterViewController _controller;
+        readonly PluginConfig _config;
+        
+        [UIValue("name")] readonly string _name;
+
+        [UIAction("DeletePreset")]
+        internal void DeletePreset()
+        {
+            var preset = _config.Presets.Find(p => p.Name == _name);
             
-            var values = _config.Presets[_name];
+            _config.Presets.Remove(preset);
+            _controller._presetsList.data.Remove(this);
+            _controller._presetsList.tableView.ReloadData();
+
+            if (_config.Presets.Count == 0) _controller.ToggleNoPresetsText(true);
+        }
+
+        [UIAction("ApplyPreset")]
+        internal void ApplyPreset()
+        {
+            var values = _config.Presets.Find(p => p.Name == _name).Filters;
             var filters = new List<BaseFilter>();
 
             foreach (var key in values.Keys)
             {
-                var filter = filterTypes.Find(f => f.Name == key);
+                var filter = _filterTypes.Find(f => f.Name == key);
                 var json = JsonConvert.SerializeObject(values[key]);
                 filters.Add(JsonConvert.DeserializeObject(json, filter) as BaseFilter);
             }
@@ -190,9 +192,9 @@ namespace ScoreList.UI
                 _scoresManager.Clean();
             }
 
-            foreach (var (key, _) in _config.Presets)
+            foreach (var preset in _config.Presets)
             {
-                var wrapper = new PresetListCellWrapper(this, key, _config);
+                var wrapper = new PresetListCellWrapper(this, preset.Name, _config);
                 _presetsList.data.Add(wrapper);
             }
             
@@ -255,16 +257,10 @@ namespace ScoreList.UI
         internal void CreatePreset()
         {
             var presetName = "preset" + _config.Presets.Count;
-            var presetValues = Filters.Values().ToDictionary(
-                f => f.GetType().Name,
-                f =>
-                {
-                    var json = JsonConvert.SerializeObject(f);
-                    return JsonConvert.DeserializeObject<object>(json);
-                }
-            );
+            var presetValues = Filters.Values().ToDictionary(f => f.GetType().Name);
+            var present = new FilterConfig { Name = presetName, Filters = presetValues };
             
-            _config.Presets.Add(presetName, presetValues);
+            _config.Presets.Add(present);
 
             var wrapper = new PresetListCellWrapper(this, presetName, _config);
             

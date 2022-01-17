@@ -19,6 +19,8 @@ namespace ScoreList.Scores
         public abstract string Display();
     }
     
+    // sort
+    
     public class OrderFilter : BaseFilter
     {
         [JsonProperty]
@@ -31,8 +33,6 @@ namespace ScoreList.Scores
             if (_order) scores.Reverse();
         }
     }
-    
-    // sort
     
     public class SortAccuracyFilter : BaseFilter
     {
