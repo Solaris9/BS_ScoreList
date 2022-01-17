@@ -16,12 +16,12 @@ namespace ScoreList.Downloaders
 {
     internal class ScoreSaberDownloader : Downloader
     {
-        const string API_URL = "https://scoresaber.com/api/";
-        const string PLAYER = "player/";
-        const string SCORES = "/scores";
+        internal const string API_URL = "https://scoresaber.com/api/";
+        internal const string PLAYER = "player/";
+        internal const string SCORES = "/scores";
 
-        const string CDN_URL = "https://cdn.scoresaber.com/";
-        const string COVERS = "covers/";
+        internal const string CDN_URL = "https://cdn.scoresaber.com/";
+        internal const string COVERS = "covers/";
 
         static readonly Dictionary<string, Sprite> SpriteCache = new Dictionary<string, Sprite>();
         
