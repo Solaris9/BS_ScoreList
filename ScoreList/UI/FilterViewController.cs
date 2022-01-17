@@ -7,6 +7,7 @@ using ScoreList.Scores;
 using UnityEngine.UI;
 using System.Linq;
 using System;
+using IPA.Utilities;
 using Newtonsoft.Json;
 using ScoreList.Configuration;
 using SiraUtil.Logging;
@@ -54,9 +55,7 @@ namespace ScoreList.UI
         [UIAction("DeletePreset")]
         internal void DeletePreset()
         {
-            var preset = _config.Presets.Find(f => f.Name == _name);
-            
-            _config.Presets.Remove(preset);
+            _config.Presets.Remove(_name);
             _controller._presetsList.data.Remove(this);
             _controller._presetsList.tableView.ReloadData();
 
@@ -66,12 +65,6 @@ namespace ScoreList.UI
         [UIAction("ApplyPreset")]
         internal void ApplyPreset()
         {
-            /*var preset = _config.Presets.Find(f => f.Name == _name);
-
-            var keys = preset.Filters.Keys.ToList();
-
-            var filters = new List<BaseFilter>();
-
             var filterTypes = new List<Type>
             {
                 typeof(OrderFilter),
@@ -89,20 +82,21 @@ namespace ScoreList.UI
                 typeof(AccuracyFilter),
                 typeof(PpFilter),
             };
+            
+            var values = _config.Presets[_name];
+            var filters = new List<BaseFilter>();
 
-            foreach (var key in keys)
+            foreach (var key in values.Keys)
             {
                 var filter = filterTypes.Find(f => f.Name == key);
-
-                var json = JsonConvert.SerializeObject(preset.Filters[key]);
-                
+                var json = JsonConvert.SerializeObject(values[key]);
                 filters.Add(JsonConvert.DeserializeObject(json, filter) as BaseFilter);
             }
 
-            ScoreListCoordinator.Instance.ShowFilteredScores(filters);*/
+            _controller._scoreView.FilterScores(filters);
         }
 
-        public PresetListCellWrapper(FilterViewController controller, PluginConfig config, string name) 
+        public PresetListCellWrapper(FilterViewController controller, string name, PluginConfig config) 
         {
             _controller = controller;
             _config = config;
@@ -195,6 +189,14 @@ namespace ScoreList.UI
                 
                 _scoresManager.Clean();
             }
+
+            foreach (var (key, _) in _config.Presets)
+            {
+                var wrapper = new PresetListCellWrapper(this, key, _config);
+                _presetsList.data.Add(wrapper);
+            }
+            
+            _presetsList.tableView.ReloadData();
         }
         
         // components
@@ -252,7 +254,8 @@ namespace ScoreList.UI
         [UIAction("CreatePreset")]
         internal void CreatePreset()
         {
-            var values = Filters.Values().ToDictionary(
+            var presetName = "preset" + _config.Presets.Count;
+            var presetValues = Filters.Values().ToDictionary(
                 f => f.GetType().Name,
                 f =>
                 {
@@ -261,15 +264,10 @@ namespace ScoreList.UI
                 }
             );
             
-            var preset = new FilterPreset
-            {
-                Name = "preset" + _config.Presets.Count,
-                Filters = values
-            };
+            _config.Presets.Add(presetName, presetValues);
+
+            var wrapper = new PresetListCellWrapper(this, presetName, _config);
             
-            var wrapper = new PresetListCellWrapper(this, _config, preset.Name);
-            
-            _config.Presets.Add(preset);
             _presetsList.data.Add(wrapper);
             _presetsList.tableView.ReloadData();
             

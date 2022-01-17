@@ -124,7 +124,7 @@
 			<vertical id='no-presets-text' bg='panel-top' align='Center' pad='1' pad-left='2' pad-right='2'>
 				<text text='No presets added yet'/>
 			</vertical>
-			<custom-list id='list'>
+			<custom-list id='presets-list'>
 				<horizontal bg='panel-top' pad-left='3'>
 					<text text='~name'/>
 					<horizontal>
