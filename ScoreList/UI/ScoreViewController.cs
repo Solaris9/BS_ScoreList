@@ -61,7 +61,7 @@ namespace ScoreList.UI
         }
 
         [UIAction("#post-parse")]
-        internal async void SetupUI()
+        internal void SetupUI()
         {
             ppLayout.gameObject.SetActive(_leaderboard.Ranked);
             accuracyLayout.gameObject.SetActive(_leaderboard.Ranked);
@@ -94,8 +94,9 @@ namespace ScoreList.UI
         {
             var filters = new List<BaseFilter>
             {
+                new RankedFilter(true),
                 new SortPpFilter(),
-                new OrderFilter("DESC")
+                new OrderFilter(true)
             };
 
             FilterScores(filters);
@@ -106,7 +107,8 @@ namespace ScoreList.UI
 
         public async void FilterScores(List<BaseFilter> filters)
         {
-            scoreList.data.Clear();
+            scoreList.data?.Clear();
+            scoreList.tableView.ReloadData();
 
             var scores = await _scoreManager.Query(filters);
             if (scores.Count == 0) return;

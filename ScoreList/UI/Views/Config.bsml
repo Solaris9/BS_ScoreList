@@ -1,7 +1,6 @@
 ﻿<horizontal>
     <vertical>
-        <primary-button id='cache-button' text='Cache scores' on-click='CacheScores'/>
-        <text id='cache-status'/>
-        <text id='current-status'/>
+        <text id='cache-status' font-size="10.0" font-align="Center"/>
+        <primary-button id='cache-button' on-click='CacheScores'/>
     </vertical>
 </horizontal>

@@ -105,9 +105,9 @@ namespace ScoreList.Downloaders
             var metadata = await GetMetadata(cancellationToken);
             var pages = (int) Math.Ceiling((double) metadata.Total / metadata.ItemsPerPage);
 
-            for (var page = 1; page != pages; page++)
+            for (var page = 0; page < pages; page++)
             {
-                var url = API_URL + PLAYER + id + SCORES + $"?page={page}&sort=recent&limit=100";
+                var url = API_URL + PLAYER + id + SCORES + $"?page={page + 1}&sort=recent&limit=100";
                 var data = await MakeScoreRequest<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken);
         
                 var leaderboardScores = data.PlayerScores.Select(LeaderboardScore.Create);
@@ -122,10 +122,7 @@ namespace ScoreList.Downloaders
 
                 await _scoreManager.Write();
 
-                if (scores.Any(s => s.TimeSet == _config.LastCachedScore)) break;
-
                 pageCachedCallback.Invoke(pages, page);
-                _config.LastCachedScore = scores.Last().TimeSet;
             }
         }
     }

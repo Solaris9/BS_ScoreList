@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace ScoreList.Scores
 {
+    // children inherit attribute
+    [JsonObject(MemberSerialization.OptIn)]
     public abstract class BaseFilter
     {
         public abstract void Apply(ref List<LeaderboardScore> scores, LeaderboardData data);
@@ -15,6 +18,21 @@ namespace ScoreList.Scores
         public abstract string Name { get; }
         public abstract string Display();
     }
+    
+    public class OrderFilter : BaseFilter
+    {
+        [JsonProperty]
+        private readonly bool _order;
+
+        public OrderFilter(bool order) => _order = order;
+
+        public override void Apply(ref List<LeaderboardScore> scores, LeaderboardData data)
+        {
+            if (_order) scores.Reverse();
+        }
+    }
+    
+    // sort
     
     public class SortAccuracyFilter : BaseFilter
     {
@@ -30,18 +48,6 @@ namespace ScoreList.Scores
                 
                 return accuracy1.CompareTo(accuracy2);
             });
-        }
-    }
-    
-    public class OrderFilter : BaseFilter
-    {
-        private readonly string _order;
-
-        public OrderFilter(string order) => _order = order;
-
-        public override void Apply(ref List<LeaderboardScore> scores, LeaderboardData data)
-        {
-            if (_order == "DESC") scores.Reverse();
         }
     }
     
@@ -82,9 +88,12 @@ namespace ScoreList.Scores
             });
         }
     }
+    
+    // filters
 
     public class RankedFilter : BaseFilter
     {
+        [JsonProperty]
         private readonly bool _isRanked;
 
         public RankedFilter(bool isRanked) => _isRanked = isRanked;
@@ -98,12 +107,31 @@ namespace ScoreList.Scores
             }).ToList();
         }
     }
+    
+    public class DownloadedFilter : BaseFilter
+    {
+        [JsonProperty]
+        private readonly bool _downloaded;
+
+        public DownloadedFilter(bool downloaded) => _downloaded = downloaded;
+
+        public override void Apply(ref List<LeaderboardScore> scores, LeaderboardData data)
+        {
+            scores = scores.Where(s =>
+            {
+                var leaderboard = data.Leaderboards.First(l => l.LeaderboardId == s.LeaderboardId);
+                return SongDataCore.Plugin.Songs.Data.Songs.ContainsKey(leaderboard.SongHash) == _downloaded;
+            }).ToList();
+        }
+    }
 
     public class StarsFilter : DisplayBaseFilter
     {
         public override string Name => "Stars";
 
+        [JsonProperty]
         private readonly float? _start;
+        [JsonProperty]
         private readonly float? _end;
 
         public StarsFilter(float? start, float? end)
@@ -133,7 +161,9 @@ namespace ScoreList.Scores
     {
         public override string Name => "Date";
 
+        [JsonProperty]
         private readonly DateTime? _start;
+        [JsonProperty]
         private readonly DateTime? _end;
 
         public DateFilter(string start, string end)
@@ -163,7 +193,9 @@ namespace ScoreList.Scores
     {
         public override string Name => "Misses";
 
+        [JsonProperty]
         private readonly int? _start;
+        [JsonProperty]
         private readonly int? _end;
 
         public MissesFilter(int? start, int? end)
@@ -189,7 +221,9 @@ namespace ScoreList.Scores
     {
         public override string Name => "Accuracy";
 
+        [JsonProperty]
         private readonly float? _start;
+        [JsonProperty]
         private readonly float? _end;
 
         public AccuracyFilter(float? start, float? end)
@@ -215,12 +249,14 @@ namespace ScoreList.Scores
             }).ToList();
         }
     }
-
+    
     public class PpFilter : DisplayBaseFilter
     {
         public override string Name => "PP";
 
+        [JsonProperty]
         private readonly int? _start;
+        [JsonProperty]
         private readonly int? _end;
 
         public PpFilter(int? start, int? end)

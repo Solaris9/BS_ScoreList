@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace ScoreList.Utils
 {
@@ -124,14 +125,6 @@ namespace ScoreList.Utils
                     _lock.ReleaseReaderLock();
                 }
             }
-        }
-    }
-
-    public static class ListExtensions
-    {
-        public static void RemoveRange<T>(this List<T> array, T[] values)
-        {
-            foreach (var value in values) array.Remove(value);
         }
     }
 }

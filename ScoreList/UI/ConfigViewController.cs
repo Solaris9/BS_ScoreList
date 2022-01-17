@@ -22,21 +22,21 @@ namespace ScoreList.UI
         [Inject] readonly PluginConfig _config;
         
         [UIComponent("cache-status")] readonly TextMeshProUGUI cacheStatus;
-        [UIComponent("current-status")] readonly TextMeshProUGUI currentStatus;
         [UIComponent("cache-button")] readonly Button cacheButton;
 
         [UIAction("#post-parse")]
-        void SetupUI()
+        async void SetupUI()
         {
             if (_config.Complete)
             {
-                cacheStatus.text = "Updated";
-                cacheButton.interactable = false;
+                var total = await _scoreManager.Total();
+                cacheStatus.text = $"{total} scores cached";
+                cacheButton.SetButtonText("Refresh");
             }
             else
             {
                 cacheStatus.text = "Not updated";
-                cacheButton.SetButtonText("Not updated");
+                cacheButton.SetButtonText("Update");
             }
         }
 
@@ -48,15 +48,14 @@ namespace ScoreList.UI
             
             await _downloader.CacheScores(cancellationToken,(pages, page) =>
             {
-                currentStatus.text = $"{page}/{pages}";
+                cacheStatus.text = $"{page + 1}/{pages}";
             });
 
+            var total = await _scoreManager.Total();
             _scoreManager.Clean();
 
-            cacheStatus.text = "Updated scores";
-            
-            cacheButton.SetButtonText("Up to date");
-            cacheButton.interactable = false;
+            cacheStatus.text = $"Updated scores\n{total} scores cached";
+            cacheButton.SetButtonText("Refresh");
 
             _config.Complete = true;
         }

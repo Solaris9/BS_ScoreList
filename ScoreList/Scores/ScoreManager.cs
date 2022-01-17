@@ -111,6 +111,24 @@ namespace ScoreList.Scores
             if (_data == null) _data = await Read();
             return _data.Leaderboards.First(m => m.LeaderboardId == id);
         }
+
+        public async Task<int> Total()
+        {
+            if (_data == null) _data = await Read();
+            var total = _data.Scores.Count;
+            _data = null;
+
+            return total;
+        }
+
+        public async Task<int> TotalRanked()
+        {
+            if (_data == null) _data = await Read();
+            var total = _data.Scores.Count(s => s.Pp > 0f);
+            _data = null;
+
+            return total;
+        }
     }
 
     public class LeaderboardData

@@ -7,6 +7,10 @@ using ScoreList.Scores;
 using UnityEngine.UI;
 using System.Linq;
 using System;
+using Newtonsoft.Json;
+using ScoreList.Configuration;
+using SiraUtil.Logging;
+using UnityEngine;
 using Zenject;
 
 #pragma warning disable CS0649
@@ -17,32 +21,90 @@ namespace ScoreList.UI
     public class FilterListCellWrapper
     {
         readonly FilterViewController _controller;
-
-        [UIValue("name")] readonly string _name;
-
+        readonly DisplayBaseFilter _filter;
         [UIValue("data")] readonly string _data;
 
         [UIAction("DeleteFilter")]
         internal void DeleteFilter()
         {
-            var filter = _controller.Filters
-                .Where(f => f is DisplayBaseFilter)
-                .Cast<DisplayBaseFilter>()
-                .ToList()
-                .Find(f => f.Name == _name);
-            
-            _controller.Filters.Remove(filter);
-            _controller.list.data.Remove(this);
-            _controller.list.tableView.ReloadData();
+            _controller.Filters.Filters.Remove(_filter);
+            _controller._filtersList.data.Remove(this);
+            _controller._filtersList.tableView.ReloadData();
 
-            if (_controller.Filters.Count == 0) _controller.ToggleNoFiltersText(true);
+            if (_controller.Filters.Filters.Count == 0) _controller.ToggleNoFiltersText(true);
         }
 
-        public FilterListCellWrapper(FilterViewController controller, string name, string data) 
+        public FilterListCellWrapper(FilterViewController controller, DisplayBaseFilter filter) 
         {
             _controller = controller;
+            _filter = filter; 
+            _data = filter.Display();
+        }
+    }
+    
+    public class PresetListCellWrapper
+    {
+        readonly FilterViewController _controller;
+        readonly PluginConfig _config;
+        
+        [UIValue("name")] readonly string _name;
+
+        [UIAction("DeletePreset")]
+        internal void DeletePreset()
+        {
+            var preset = _config.Presets.Find(f => f.Name == _name);
+            
+            _config.Presets.Remove(preset);
+            _controller._presetsList.data.Remove(this);
+            _controller._presetsList.tableView.ReloadData();
+
+            if (_config.Presets.Count == 0) _controller.ToggleNoPresetsText(true);
+        }
+
+        [UIAction("ApplyPreset")]
+        internal void ApplyPreset()
+        {
+            var preset = _config.Presets.Find(f => f.Name == _name);
+
+            var keys = preset.Filters.Keys.ToList();
+
+            var filters = new List<BaseFilter>();
+
+            var filterTypes = new List<Type>
+            {
+                typeof(OrderFilter),
+                typeof(SortAccuracyFilter),
+                typeof(SortMissedNotesFilter),
+                typeof(SortTimeSetFilter),
+                typeof(SortPpFilter),
+                typeof(SortRankFilter),
+                typeof(SortStarsFilter),
+                typeof(RankedFilter),
+                typeof(DownloadedFilter),
+                typeof(StarsFilter),
+                typeof(DateFilter),
+                typeof(MissesFilter),
+                typeof(AccuracyFilter),
+                typeof(PpFilter),
+            };
+
+            foreach (var key in keys)
+            {
+                var filter = filterTypes.Find(f => f.Name == key);
+
+                var json = JsonConvert.SerializeObject(preset.Filters[key]);
+                
+                filters.Add(JsonConvert.DeserializeObject(json, filter) as BaseFilter);
+            }
+
+            ScoreListCoordinator.Instance.ShowFilteredScores(filters);
+        }
+
+        public PresetListCellWrapper(FilterViewController controller, PluginConfig config, string name) 
+        {
+            _controller = controller;
+            _config = config;
             _name = name;
-            _data = data;
         }
     }
 
@@ -50,48 +112,109 @@ namespace ScoreList.UI
     [ViewDefinition("ScoreList.UI.Views.ScoreFilters.bsml")]
     public class FilterViewController : BSMLAutomaticViewController
     {
+        internal class FiltersObject
+        {
+            public BaseFilter Order;
+            public BaseFilter Sort;
+            public readonly List<BaseFilter> Filters = new List<BaseFilter>();
+
+            public List<BaseFilter> Values()
+            {
+                var list = new List<BaseFilter>();
+
+                list.AddRange(Filters);
+                list.Add(Sort);
+                list.Add(Order);
+
+                return list;
+            }
+
+            public void Clear()
+            {
+                Sort = new SortPpFilter();
+                Order = new OrderFilter(true);
+                
+                Filters.Clear();
+                Filters.Add(new RankedFilter(true));
+                // Filters.Add(new DownloadedFilter(true));
+            }
+        }
+        
         [Inject] readonly ScoreManager _scoresManager;
+        [Inject] readonly PluginConfig _config;
+        [Inject] readonly SiraLog _siraLog;
+
+        internal readonly FiltersObject Filters = new FiltersObject();
+        
+        // alter components
+
+        private void AlterToggle(ToggleSetting toggle)
+        {
+            var toggleTransform = toggle.toggle.transform;
+            var originalTransform = toggleTransform.position;
+            toggleTransform.position = new Vector3(-1.78f, originalTransform.y, originalTransform.z);
+
+            toggle.Value = true;
+            toggle.ApplyValue();
+        }
 
         [UIAction("#post-parse")]
-        void SetupUI()
+        async void SetupUI()
         {
-            var data = _scoresManager.Read().GetAwaiter().GetResult();
-            var scores = data.Scores;
+            AlterToggle(_downloadToggle);
+            AlterToggle(_rankedToggle);
 
-            if (scores.Count > 0)
+            var count = await _scoresManager.TotalRanked();
+
+            if (count > 0)
             {
-                new RankedFilter(true).Apply(ref scores, data);
                 // max pp
+
+                var ppFilters = new List<BaseFilter> {new RankedFilter(true), new SortPpFilter(), new OrderFilter(true)};
+                var ppScores =  await _scoresManager.Query(ppFilters);
+                var pp = (int) ppScores.First().Pp;
                 
-                new SortPpFilter().Apply(ref scores, null);
-                _maxPp = (int)scores.First().Pp;
+                _filterPpMinimum.slider.maxValue = pp;
+                _filterPpMaximum.slider.maxValue = pp;
+                _filterPpMaximum.slider.value = pp;
                 
+                _scoresManager.Clean();
+
                 // max stars
 
-                new SortStarsFilter().Apply(ref scores, data);
-                var id = scores.First().LeaderboardId;
-                var info = _scoresManager.GetLeaderboard(id).GetAwaiter().GetResult();
-                _maxStars = (float) info.Stars;
+                var starsFilters = new List<BaseFilter> {new RankedFilter(true), new SortStarsFilter(), new OrderFilter(true)};
+                var starsScores = await _scoresManager.Query(starsFilters);
 
+                var id = starsScores.First().LeaderboardId;
+                var info = await _scoresManager.GetLeaderboard(id);
+                var stars = (int) info.Stars;
+                
+                _filterStarsMinimum.slider.maxValue  = stars;
+                _filterStarsMaximum.slider.maxValue  = stars;
+                _filterStarsMaximum.slider.value = stars;
+                
                 _scoresManager.Clean();
             }
         }
         
         // components
-
+        
         [UIComponent("stars-tab")] readonly Tab _starsTab;
         [UIComponent("accuracy-tab")] readonly Tab _accuracyTab;
         [UIComponent("pp-tab")] readonly Tab _ppTab;
         
         [UIComponent("no-filters-text")] readonly LayoutElement _noFiltersText;
-        [UIComponent("list")] internal readonly CustomCellListTableData list;
-        internal readonly List<BaseFilter> Filters = new List<BaseFilter>();
+        [UIComponent("no-presets-text")] readonly LayoutElement _noPresetsText;
+        
+        [UIComponent("filters-list")] internal readonly CustomCellListTableData _filtersList;
+        [UIComponent("presets-list")] internal readonly CustomCellListTableData _presetsList;
 
-        // sort components
+        // sort & order components
 
         [UIComponent("sort")] readonly DropDownListSetting _sort;
         [UIComponent("order")] readonly DropDownListSetting _order;
-        [UIComponent("ranked")] readonly DropDownListSetting _ranked;
+        [UIComponent("download-toggle")] readonly ToggleSetting _downloadToggle;
+        [UIComponent("ranked-toggle")] readonly ToggleSetting _rankedToggle;
 
         // pp components
 
@@ -122,22 +245,192 @@ namespace ScoreList.UI
         [UIComponent("filter-accuracy-maximum")] readonly SliderSetting _filterAccuracyMaximum;
 
         internal void ToggleNoFiltersText(bool value) => _noFiltersText.gameObject.SetActive(value);
+        internal void ToggleNoPresetsText(bool value) => _noPresetsText.gameObject.SetActive(value);
 
-        // main functions
+        // main  functions
 
-        [UIAction("ApplyFilters")]
-        void ApplyFilters()
+        [UIAction("CreatePreset")]
+        internal void CreatePreset()
         {
-            Filters.AddRange(new[]{
-                new RankedFilter((string) _ranked.Value == "Ranked"),
-                GetFilter((string) _sort.Value),
-                new OrderFilter((string) _order.Value),
-            });
-
-            ScoreListCoordinator.Instance.ShowFilteredScores(Filters);
+            var values = Filters.Values().ToDictionary(
+                f => f.GetType().Name,
+                f =>
+                {
+                    var json = JsonConvert.SerializeObject(f);
+                    return JsonConvert.DeserializeObject<object>(json);
+                }
+            );
+            
+            var preset = new FilterPreset
+            {
+                Name = "preset" + _config.Presets.Count,
+                Filters = values
+            };
+            
+            var wrapper = new PresetListCellWrapper(this, _config, preset.Name);
+            
+            _config.Presets.Add(preset);
+            _presetsList.data.Add(wrapper);
+            _presetsList.tableView.ReloadData();
+            
+            ToggleNoPresetsText(false);
         }
 
-        static BaseFilter GetFilter(string sortBy)
+        [UIAction("ResetFilters")]
+        void ResetFilters()
+        {
+            Filters.Clear();
+            _filtersList.data.Clear();
+            _filtersList.tableView.ReloadData();
+            
+            _sort.Value = "PP";
+            _sort.values = SortChoices;
+            _sort.UpdateChoices();
+            _sort.ApplyValue();
+            
+            _order.Value = "DESC";
+            _order.ApplyValue();
+            
+            _rankedToggle.Value = true;
+            _rankedToggle.ApplyValue();
+            
+            /*_downloadToggle.Value = true;
+            _downloadToggle.ApplyValue();*/
+            
+            Filters.Filters.Add(new PpFilter(0, 100));
+            
+            Filters.Values().ForEach(f => _siraLog.Info(f.GetType().Name));
+
+            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+
+            ToggleNoFiltersText(true);
+        }
+
+        [UIAction("CreateFilter")]
+        void CreateFilter()
+        {
+            var displayFilters = Filters.Filters
+                .Where(f => f is DisplayBaseFilter)
+                .Cast<DisplayBaseFilter>();
+            if (displayFilters.Any(f => f.Name == _filterChoice)) return;
+
+            var filter = TryCreateFilter();
+            if (filter == null) return;
+            
+            var wrapper = new FilterListCellWrapper(this,  filter);
+            
+            Filters.Filters.Add(filter);
+            _filtersList.data.Add(wrapper);
+            _filtersList.tableView.ReloadData();
+
+            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+            
+            ToggleNoFiltersText(false);
+        }
+        
+        // this is to apply the filter you're on
+        // ReSharper disable once UnusedParameter.Local
+        [UIAction("FilterSelect")]
+        void FilterSelect(object _, int index) => _filterChoice = (string)FilterChoices[index];
+        
+        // on change functions
+
+        [UIAction("SortChanged")]
+        void SortChanged(string sort)
+        {
+            Filters.Sort = GetSortFilter(sort);
+            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+        }
+
+        [UIAction("OrderChanged")]
+        void OrderChanged(string order)
+        {
+            Filters.Order = new OrderFilter(order == "DESC");
+            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+        }
+
+        [UIAction("DownloadedChanged")]
+        void DownloadedChanged(bool downloaded)
+        {
+            var existing = Filters.Filters.Find(f => f.GetType().Name == nameof(DownloadedFilter));
+            if (existing != null) Filters.Filters.Remove(existing);
+            
+            var filter = new DownloadedFilter(downloaded);
+            Filters.Filters.Add(filter);
+            
+            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+        }
+
+        [UIAction("RankedChanged")]
+        void RankedChanged(bool ranked)
+        {
+            _starsTab.IsVisible = ranked;
+            _accuracyTab.IsVisible = ranked;
+            _ppTab.IsVisible = ranked;
+
+            _sort.values = ranked ?  SortChoices : new List<object> { "Rank", "TimeSet", "MissedNotes" };
+            if (!_sort.values.Contains(_sort.Value)) _sort.Value = _sort.values.First();
+            
+            _sort.ApplyValue();
+            _sort.UpdateChoices();
+            
+            // replace ranked filter
+            /*var existing = Filters.Filters.Find(f => f.GetType().Name == nameof(RankedFilter));
+            if (existing != null) Filters.Filters.Remove(existing);
+            
+            var filter = new RankedFilter(ranked);
+            Filters.Filters.Add(filter);*/
+
+            // TODO: figure out a better way to clear opposite filters
+            Filters.Clear();
+            _filtersList.data.Clear();
+            _filtersList.tableView.ReloadData();
+            
+            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+        }
+        
+        // choice
+
+        [UIValue("filter-choice")] string _filterChoice = "Stars";
+
+        // choices
+
+        [UIValue("order-choices")]
+        List<object> OrderChoices => new List<object> { "DESC", "ASC" };
+
+        [UIValue("sort-choices")]
+        List<object> SortChoices => new List<object>
+        {
+            "Rank", "TimeSet", "MissedNotes", "PP", "Stars", "Accuracy"
+        };
+
+        [UIValue("filter-choices")]
+        List<object> FilterChoices => new List<object>
+        {
+            "Stars", "PP", "Accuracy", "Misses", "Date"
+        };
+
+        // formatters
+
+        List<string> MonthChoices => new List<string>
+        {
+            "January ", "February", "March",
+            "April",    "May",      "June",
+            "July",     "August",   "September",
+            "October",  "November", "December"
+        };
+
+        [UIAction("FormatMonth")]
+        string FormatMonth(int index) => MonthChoices[index - 1];
+
+        // utils
+
+        [UIValue("max-year")] readonly int _maxYear = DateTime.Today.Year;
+        [UIValue("max-month")] readonly int _maxMonth = 12;
+        [UIValue("max-accuracy")] readonly int _maxAccuracy = 100;
+        [UIValue("max-misses")] readonly int _maxMisses = 100;
+
+        static BaseFilter GetSortFilter(string sortBy)
         {
             switch (sortBy)
             {
@@ -151,41 +444,19 @@ namespace ScoreList.UI
 
             return null;
         }
-        
-        // ReSharper disable once UnusedParameter.Local
-        [UIAction("FilterSelect")]
-        void FilterSelect(object _, int index) => _filterChoice = (string)FilterChoices[index];
-
-        [UIAction("TypeChanged")]
-        void TypeChanged(string type)
+        static string GetSortFilterName(string sortBy)
         {
-            _starsTab.IsVisible = type == "Ranked";
-            _accuracyTab.IsVisible = type == "Ranked";
-            _ppTab.IsVisible = type == "Ranked";
+            switch (sortBy)
+            {
+                case "Rank": return nameof(SortRankFilter);
+                case "TimeSet": return nameof(SortTimeSetFilter);
+                case "MissedNotes": return nameof(SortMissedNotesFilter);
+                case "PP": return nameof(SortPpFilter);
+                case "Stars": return nameof(SortStarsFilter);
+                case "Accuracy": return nameof(SortAccuracyFilter);
+            }
 
-            _sort.values = type == "Ranked" ?  SortChoices : new List<object> { "Rank", "TimeSet", "MissedNotes" };
-            _sort.UpdateChoices();
-
-            // clear filters, TODO: figure out a better way to clear opposite filters
-            Filters.Clear();
-            list.data.Clear();
-            list.tableView.ReloadData();
-        }
-
-        [UIAction("ResetFilters")]
-        void ResetFilters()
-        {
-            Filters.Clear();
-            list.data.Clear();
-            list.tableView.ReloadData();
-            
-            _sort.Value = "PP";
-            _order.Value = "DESC";
-            _ranked.Value = "Ranked";
-            _sort.values = SortChoices;
-            _sort.UpdateChoices();
-
-            ToggleNoFiltersText(true);
+            return null;
         }
 
         DisplayBaseFilter TryCreateFilter()
@@ -194,7 +465,8 @@ namespace ScoreList.UI
             {
                 case "Stars":
                     float? starsMaximum = null;
-                    if (_filterStarsMaximum.Value != _maxStars) starsMaximum = _filterStarsMaximum.Value;
+                    if (_filterStarsMaximum.Value != _filterStarsMaximum.slider.maxValue)
+                        starsMaximum = _filterStarsMaximum.Value;
 
                     float? starsMinimum = null;
                     if (_filterStarsMinimum.Value != 0f) starsMinimum = _filterStarsMinimum.Value;
@@ -205,7 +477,8 @@ namespace ScoreList.UI
 
                 case "PP":
                     int? ppMaximum = null;
-                    if ((int)_filterPpMaximum.Value != _maxPp) ppMaximum = (int)_filterPpMaximum.Value;
+                    if ((int)_filterPpMaximum.Value != _filterPpMaximum.slider.maxValue)
+                        ppMaximum = (int)_filterPpMaximum.Value;
 
                     int? ppMinimum = null;
                     if ((int)_filterPpMinimum.Value != 0) ppMinimum = (int)_filterPpMinimum.Value;
@@ -264,75 +537,5 @@ namespace ScoreList.UI
 
             return null;
         }
-
-        [UIAction("CreateFilter")]
-        void CreateFilter()
-        {
-            var displayFilters = Filters.Where(f => f is DisplayBaseFilter).Cast<DisplayBaseFilter>();
-            if (displayFilters.Any(f => f.Name == _filterChoice)) return;
-
-            var filter = TryCreateFilter();
-            if (filter == null) return;
-
-            var wrapper = new FilterListCellWrapper(this, _filterChoice, filter.Display());
-
-            Filters.Add(filter);
-            list.data.Add(wrapper);
-            list.tableView.ReloadData();
-
-            ToggleNoFiltersText(false);
-        }
-
-        // choice
-
-        [UIValue("filter-choice")] string _filterChoice = "Stars";
-
-        // choices
-
-        [UIValue("order-choices")]
-        List<object> OrderChoices => new List<object> { "DESC", "ASC" };
-
-        [UIValue("ranked-choices")]
-        List<object> RankedChoices => new List<object> { "Ranked", "Unranked" };
-
-        [UIValue("sort-choices")]
-        List<object> SortChoices => new List<object> {
-            "Rank",
-            "TimeSet",
-            "MissedNotes",
-            "PP",
-            "Stars",
-            "Accuracy"
-        };
-
-        [UIValue("filter-choices")]
-        List<object> FilterChoices => new List<object> {
-            "Stars",
-            "PP",
-            "Accuracy",
-            "Misses",
-            "Date"
-        };
-
-        // formatters
-
-        List<string> MonthChoices => new List<string> {
-            "January ", "February", "March",
-            "April",    "May",      "June",
-            "July",     "August",   "September",
-            "October",  "November", "December"
-        };
-
-        [UIAction("FormatMonth")]
-        string FormatMonth(int index) => MonthChoices[index - 1];
-
-        // utils
-
-        [UIValue("max-year")] readonly int _maxYear = DateTime.Today.Year;
-        [UIValue("max-month")] readonly int _maxMonth = 12;
-        [UIValue("max-accuracy")] readonly int _maxAccuracy = 100;
-        [UIValue("max-misses")] readonly int _maxMisses = 100;
-        [UIValue("max-stars")] float _maxStars;
-        [UIValue("max-pp")] int _maxPp;
     }
 }
