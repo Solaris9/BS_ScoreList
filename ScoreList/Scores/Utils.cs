@@ -21,7 +21,8 @@ namespace ScoreList.Scores
         ZM = 2048,
         SS = 4096,
         FS = 8192,
-        SF = 16384
+        SF = 16384,
+        SC = 32768
     }
     
     public static class SongUtils
