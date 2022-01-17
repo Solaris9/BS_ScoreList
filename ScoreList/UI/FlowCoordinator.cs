@@ -13,8 +13,6 @@ namespace ScoreList.UI
 {
     internal class ScoreListCoordinator : FlowCoordinator, IInitializable
     {
-        public static ScoreListCoordinator Instance;
-
         [Inject] readonly SiraLog _siraLog; 
         [Inject] readonly ScoreManager _scoreManager;
 
@@ -30,7 +28,6 @@ namespace ScoreList.UI
                 if (!firstActivation) return;
 
                 SetTitle("ScoreList");
-                Instance = this;
                 showBackButton = true;
                 
                 _scoreView.DidSelectSong += HandleDidSelectSong;
@@ -74,8 +71,5 @@ namespace ScoreList.UI
             var score = await _scoreManager.GetScore(scoreId);
             await _detailView.Load(score);
         }
-
-        public void ShowFilteredScores(List<BaseFilter> filters) => 
-            _scoreView.FilterScores(filters);
     }
 }

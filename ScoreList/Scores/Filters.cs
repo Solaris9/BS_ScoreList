@@ -152,6 +152,9 @@ namespace ScoreList.Scores
             scores = scores.Where(s =>
             {
                 var leaderboard = data.Leaderboards.First(l => l.LeaderboardId == s.LeaderboardId);
+                
+                if (_start != null && _end == null) return leaderboard.Stars > _start;
+                if (_start == null && _end != null) return leaderboard.Stars < _end;
                 return leaderboard.Stars > _start && leaderboard.Stars < _end;
             }).ToList();
         }
@@ -185,7 +188,12 @@ namespace ScoreList.Scores
         {
             var start = _start ?? new DateTime(2018, 5, 1);
             var end = _end ?? DateTime.Now;
-            scores = scores.Where(s => s.TimeSet > start && s.TimeSet < end).ToList();
+            scores = scores.Where(s =>
+            {
+                if (_start != null && _end == null) return s.TimeSet > start && s.TimeSet < end;
+                if (_start == null && _end != null) return s.TimeSet > start && s.TimeSet < end;
+                return s.TimeSet > start && s.TimeSet < end;
+            }).ToList();
         }
     }
 
@@ -213,7 +221,12 @@ namespace ScoreList.Scores
 
         public override void Apply(ref List<LeaderboardScore> scores, LeaderboardData data)
         {
-            scores = scores.Where(s => s.MissedNotes > _start && s.MissedNotes < _end).ToList();
+            scores = scores.Where(s =>
+            {
+                if (_start != null && _end == null) return s.MissedNotes > _start;
+                if (_start == null && _end != null) return s.MissedNotes < _end;
+                return s.MissedNotes > _start && s.MissedNotes < _end;
+            }).ToList();
         }
     }
 
@@ -245,6 +258,8 @@ namespace ScoreList.Scores
             {
                 var leaderboard = data.Leaderboards.First(l => l.LeaderboardId == s.LeaderboardId);
                 var accuracy = (float) (100.0 * s.BaseScore / leaderboard.MaxScore);
+                if (_start != null && _end == null) return accuracy > _start;
+                if (_start == null && _end != null) return accuracy < _end;
                 return accuracy > _start && accuracy < _end;
             }).ToList();
         }
@@ -274,7 +289,12 @@ namespace ScoreList.Scores
 
         public override void Apply(ref List<LeaderboardScore> scores, LeaderboardData data)
         {
-            scores = scores.Where(s => s.Pp > _start && s.Pp < _end).ToList();
+            scores = scores.Where(s =>
+            {
+                if (_start != null && _end == null) return s.Pp > _start;
+                if (_start == null && _end != null) return s.Pp < _end;
+                return s.Pp > _start && s.Pp < _end;
+            }).ToList();
         }
     }
 }

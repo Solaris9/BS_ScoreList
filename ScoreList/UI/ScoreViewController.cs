@@ -83,34 +83,29 @@ namespace ScoreList.UI
     {
         public event Action<int> DidSelectSong;
         
+        [Inject] private readonly FilterViewController _scoreFilter;
         [Inject] private readonly ScoreManager _scoreManager;
         [Inject] private readonly SiraLog _siraLog;
 
-        [UIComponent("list")]
-        public CustomCellListTableData scoreList;
+        [UIComponent("list")] public CustomCellListTableData scoreList;
+        [UIComponent("no-scores-text")] readonly LayoutElement _noScoresText;
+
+        private void ToggleNoFiltersText(bool value) => _noScoresText.gameObject.SetActive(value);
 
         [UIAction("#post-parse")]
-        internal void SetupUI()
-        {
-            var filters = new List<BaseFilter>
-            {
-                new RankedFilter(true),
-                new SortPpFilter(),
-                new OrderFilter(true)
-            };
-
-            FilterScores(filters);
-        }
+        internal void SetupUI() => _scoreFilter.ResetFilters();
 
         [UIAction("SongSelect")]
         public void SongSelect(TableView _, object song) => DidSelectSong?.Invoke(((ScoreInfoCellWrapper)song).ScoreId);
 
         public async void FilterScores(List<BaseFilter> filters)
         {
-            scoreList.data?.Clear();
+            var scores = await _scoreManager.Query(filters);
+            
+            scoreList.data.Clear();
             scoreList.tableView.ReloadData();
 
-            var scores = await _scoreManager.Query(filters);
+            ToggleNoFiltersText(scores.Count == 0);
             if (scores.Count == 0) return;
 
             foreach (var score in scores)

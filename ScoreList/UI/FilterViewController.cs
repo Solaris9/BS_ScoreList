@@ -32,6 +32,8 @@ namespace ScoreList.UI
             _controller._filtersList.tableView.ReloadData();
 
             if (_controller.Filters.Filters.Count == 0) _controller.ToggleNoFiltersText(true);
+            
+            _controller._scoreView.FilterScores(_controller.Filters.Values());
         }
 
         public FilterListCellWrapper(FilterViewController controller, DisplayBaseFilter filter) 
@@ -64,7 +66,7 @@ namespace ScoreList.UI
         [UIAction("ApplyPreset")]
         internal void ApplyPreset()
         {
-            var preset = _config.Presets.Find(f => f.Name == _name);
+            /*var preset = _config.Presets.Find(f => f.Name == _name);
 
             var keys = preset.Filters.Keys.ToList();
 
@@ -97,7 +99,7 @@ namespace ScoreList.UI
                 filters.Add(JsonConvert.DeserializeObject(json, filter) as BaseFilter);
             }
 
-            ScoreListCoordinator.Instance.ShowFilteredScores(filters);
+            ScoreListCoordinator.Instance.ShowFilteredScores(filters);*/
         }
 
         public PresetListCellWrapper(FilterViewController controller, PluginConfig config, string name) 
@@ -140,6 +142,7 @@ namespace ScoreList.UI
             }
         }
         
+        [Inject] internal readonly ScoreViewController _scoreView;
         [Inject] readonly ScoreManager _scoresManager;
         [Inject] readonly PluginConfig _config;
         [Inject] readonly SiraLog _siraLog;
@@ -153,9 +156,6 @@ namespace ScoreList.UI
             var toggleTransform = toggle.toggle.transform;
             var originalTransform = toggleTransform.position;
             toggleTransform.position = new Vector3(-1.78f, originalTransform.y, originalTransform.z);
-
-            toggle.Value = true;
-            toggle.ApplyValue();
         }
 
         [UIAction("#post-parse")]
@@ -172,7 +172,7 @@ namespace ScoreList.UI
 
                 var ppFilters = new List<BaseFilter> {new RankedFilter(true), new SortPpFilter(), new OrderFilter(true)};
                 var ppScores =  await _scoresManager.Query(ppFilters);
-                var pp = (int) ppScores.First().Pp;
+                var pp = (float) Math.Ceiling(ppScores.First().Pp);
                 
                 _filterPpMinimum.slider.maxValue = pp;
                 _filterPpMaximum.slider.maxValue = pp;
@@ -187,10 +187,10 @@ namespace ScoreList.UI
 
                 var id = starsScores.First().LeaderboardId;
                 var info = await _scoresManager.GetLeaderboard(id);
-                var stars = (int) info.Stars;
+                var stars = (float) Math.Ceiling(info.Stars);
                 
-                _filterStarsMinimum.slider.maxValue  = stars;
-                _filterStarsMaximum.slider.maxValue  = stars;
+                _filterStarsMinimum.slider.maxValue = stars;
+                _filterStarsMaximum.slider.maxValue = stars;
                 _filterStarsMaximum.slider.value = stars;
                 
                 _scoresManager.Clean();
@@ -277,7 +277,7 @@ namespace ScoreList.UI
         }
 
         [UIAction("ResetFilters")]
-        void ResetFilters()
+        public void ResetFilters()
         {
             Filters.Clear();
             _filtersList.data.Clear();
@@ -296,18 +296,13 @@ namespace ScoreList.UI
             
             /*_downloadToggle.Value = true;
             _downloadToggle.ApplyValue();*/
-            
-            Filters.Filters.Add(new PpFilter(0, 100));
-            
-            Filters.Values().ForEach(f => _siraLog.Info(f.GetType().Name));
 
-            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
-
+            _scoreView.FilterScores(Filters.Values());
             ToggleNoFiltersText(true);
         }
 
         [UIAction("CreateFilter")]
-        void CreateFilter()
+        private void CreateFilter()
         {
             var displayFilters = Filters.Filters
                 .Where(f => f is DisplayBaseFilter)
@@ -323,7 +318,7 @@ namespace ScoreList.UI
             _filtersList.data.Add(wrapper);
             _filtersList.tableView.ReloadData();
 
-            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+            _scoreView.FilterScores(Filters.Values());
             
             ToggleNoFiltersText(false);
         }
@@ -339,14 +334,14 @@ namespace ScoreList.UI
         void SortChanged(string sort)
         {
             Filters.Sort = GetSortFilter(sort);
-            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+            _scoreView.FilterScores(Filters.Values());
         }
 
         [UIAction("OrderChanged")]
         void OrderChanged(string order)
         {
             Filters.Order = new OrderFilter(order == "DESC");
-            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+            _scoreView.FilterScores(Filters.Values());
         }
 
         [UIAction("DownloadedChanged")]
@@ -358,7 +353,7 @@ namespace ScoreList.UI
             var filter = new DownloadedFilter(downloaded);
             Filters.Filters.Add(filter);
             
-            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+            _scoreView.FilterScores(Filters.Values());
         }
 
         [UIAction("RankedChanged")]
@@ -374,19 +369,10 @@ namespace ScoreList.UI
             _sort.ApplyValue();
             _sort.UpdateChoices();
             
-            // replace ranked filter
-            /*var existing = Filters.Filters.Find(f => f.GetType().Name == nameof(RankedFilter));
-            if (existing != null) Filters.Filters.Remove(existing);
-            
-            var filter = new RankedFilter(ranked);
-            Filters.Filters.Add(filter);*/
-
             // TODO: figure out a better way to clear opposite filters
-            Filters.Clear();
-            _filtersList.data.Clear();
-            _filtersList.tableView.ReloadData();
+            ResetFilters();
             
-            ScoreListCoordinator.Instance.ShowFilteredScores(Filters.Values());
+            _scoreView.FilterScores(Filters.Values());
         }
         
         // choice
@@ -444,41 +430,25 @@ namespace ScoreList.UI
 
             return null;
         }
-        static string GetSortFilterName(string sortBy)
-        {
-            switch (sortBy)
-            {
-                case "Rank": return nameof(SortRankFilter);
-                case "TimeSet": return nameof(SortTimeSetFilter);
-                case "MissedNotes": return nameof(SortMissedNotesFilter);
-                case "PP": return nameof(SortPpFilter);
-                case "Stars": return nameof(SortStarsFilter);
-                case "Accuracy": return nameof(SortAccuracyFilter);
-            }
-
-            return null;
-        }
-
-        DisplayBaseFilter TryCreateFilter()
+        
+        private DisplayBaseFilter TryCreateFilter()
         {
             switch (_filterChoice)
             {
                 case "Stars":
                     float? starsMaximum = null;
-                    if (_filterStarsMaximum.Value != _filterStarsMaximum.slider.maxValue)
-                        starsMaximum = _filterStarsMaximum.Value;
+                    if (_filterStarsMaximum.Value != _filterStarsMaximum.slider.maxValue) starsMaximum = _filterStarsMaximum.Value;
 
                     float? starsMinimum = null;
                     if (_filterStarsMinimum.Value != 0f) starsMinimum = _filterStarsMinimum.Value;
-
+                    
                     if (starsMaximum != null || starsMinimum != null)
                         return new StarsFilter(starsMinimum, starsMaximum);
                     break;
 
                 case "PP":
                     int? ppMaximum = null;
-                    if ((int)_filterPpMaximum.Value != _filterPpMaximum.slider.maxValue)
-                        ppMaximum = (int)_filterPpMaximum.Value;
+                    if ((int)_filterPpMaximum.Value != _filterPpMaximum.slider.maxValue) ppMaximum = (int)_filterPpMaximum.Value;
 
                     int? ppMinimum = null;
                     if ((int)_filterPpMinimum.Value != 0) ppMinimum = (int)_filterPpMinimum.Value;

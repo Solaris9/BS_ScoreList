@@ -1,5 +1,8 @@
 ﻿<vertical>
 	<page-button event-click='list#PageUp' direction='Up'/>
+	<vertical id='no-scores-text' bg='panel-top' align='Center' pad='1' pad-left='2' pad-right='2'>
+		<text text='No scores found with those filters'/>
+	</vertical>
 	<custom-list id='list' select-cell='SongSelect' list-width='100' cell-size='14' visible-cells='5'>
 		<horizontal bg='panel-top'>
 			<horizontal>
