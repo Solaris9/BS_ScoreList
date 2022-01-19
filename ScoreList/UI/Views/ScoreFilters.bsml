@@ -1,4 +1,4 @@
-﻿<vertical vertical-fit="PreferredSize" pref-height="55" anchor-pos-y="25">
+﻿<vertical vertical-fit="PreferredSize" pref-height="53" anchor-pos-y="25">
 	<horizontal vertical-fit='PreferredSize' pref-height='6' spacing='4'>
 		<tab-selector tab-tag='tabs'/>
 	</horizontal>
@@ -75,7 +75,7 @@
 				</vertical>
 			</modal>
 
-			<vertical bg='panel-top' vertical-fit='PreferredSize' pad-left='5' pad-right='5'>
+			<vertical bg='panel-top' vertical-fit='PreferredSize' pad-left='5' pad-right='5' pad-bottom="1">
 				<horizontal>
 					<vertical preferred-width="36">
 						<text text="Sort" align="Center"/>
@@ -90,7 +90,7 @@
 				<horizontal>
 					<vertical preferred-width="36">
 						<text text="Downloaded" align="Center" />
-						<checkbox id="download-toggle" text=" " on-change="DownloadedChanged"/>
+						<checkbox id="download-toggle" text=" " interactable='false' on-change="DownloadedChanged"/>
 					</vertical>
 					<vertical preferred-width="36">
 						<text text="Ranked" align="Center"/>
@@ -99,17 +99,27 @@
 				</horizontal>
 			</vertical>
 
-			<vertical pad='4' pad-left='3' pad-right='3' vertical-fit="PreferredSize" horizontal-fit="PreferredSize" pref-height="40">
-				<vertical id='no-filters-text' bg='panel-top' align='Center' pad-left='2' pad-right='2' pref-height="12">
-					<text text='No filters added yet'/>
+			<horizontal pad-top='2' child-control-width="false" pref-height="40" anchor-pos-x="-5">
+				<vertical>
+					<vertical id='no-filters-text' bg='panel-top' align='Center' pad-left='2' pad-right='2' pref-height="10">
+						<text text='No filters added yet'/>
+					</vertical>
+					<custom-list id='filters-list'>
+						<horizontal bg='panel-top'>
+							<horizontal pad-top='1' pad-left="2">
+								<text text='~data'/>
+							</horizontal>
+							<button text='Remove' on-click='DeleteFilter'/>
+						</horizontal>
+					</custom-list>
 				</vertical>
-				<custom-list id='filters-list'>
-					<horizontal bg='panel-top' pad-left='3'>
-						<text text='~data'/>
-						<button text='Remove' on-click='DeleteFilter'/>
-					</horizontal>
-				</custom-list>
-			</vertical>
+				
+				<vertical>
+					<page-button event-click='filters-list#PageUp' direction='Up' ignore-layout="true" anchor-pos-y="6" pref-width="5"/>
+					<page-button event-click='filters-list#PageDown' direction='Down' ignore-layout="true" anchor-pos-y="-23" pref-width="5"/>
+				</vertical>
+				
+			</horizontal>
 			
 			<horizontal bg='panel-top' pad-bottom='1' pad-right='2' pad-left='2' spacing='5'>
 				<button text='Create Preset' on-click='CreatePreset'/>
@@ -120,19 +130,30 @@
 	</tab>
 
 	<tab tags="tabs" tab-name="Presets">
-		<vertical pad='4' pad-left='3' pad-right='3'  vertical-fit="PreferredSize" pref-height="40">
-			<vertical id='no-presets-text' bg='panel-top' align='Center' pad-left='2' pad-right='2' pref-height="12">
-				<text text='No presets added yet'/>
-			</vertical>
-			<custom-list id='presets-list'>
-				<horizontal bg='panel-top' pad-left='3'>
-					<text text='~name'/>
-					<horizontal>
-						<button text='Apply' on-click='ApplyPreset'/>
-						<button text='Remove' on-click='DeletePreset'/>
-					</horizontal>
-				</horizontal>
-			</custom-list>
+		<vertical vertical-fit="PreferredSize">
+			<horizontal pad-top='18' pref-height="80" child-control-width="false">
+				<vertical pad-right="7">
+					<vertical id='no-presets-text' bg='panel-top' align='Center' pad-left='2' pad-right='2' pref-height="6">
+						<text text='No presets added yet'/>
+					</vertical>
+					<custom-list id='presets-list'>
+						<horizontal bg='panel-top' pad-left='3'>
+							<horizontal pad-top='1'>
+								<text text='~name'/>
+							</horizontal>
+							<horizontal>
+								<button text='Apply' on-click='ApplyPreset'/>
+								<button text='Remove' on-click='DeletePreset'/>
+							</horizontal>
+						</horizontal>
+					</custom-list>
+				</vertical>
+				
+				<vertical vertical-fit="Unconstrained">
+					<page-button event-click='presets-list#PageUp' direction='Up' ignore-layout="true" anchor-pos-y="10" pref-width="7"/>
+					<page-button event-click='presets-list#PageDown' direction='Down' ignore-layout="true" anchor-pos-y="-40" pref-width="7"/>
+				</vertical>
+			</horizontal>
 		</vertical>
 	</tab>
 </vertical>

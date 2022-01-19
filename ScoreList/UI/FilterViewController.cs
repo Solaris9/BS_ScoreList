@@ -22,7 +22,7 @@ namespace ScoreList.UI
     public class FilterListCellWrapper
     {
         readonly FilterViewController _controller;
-        readonly DisplayBaseFilter _filter;
+        internal readonly DisplayBaseFilter _filter;
         [UIValue("data")] readonly string _data;
 
         [UIAction("DeleteFilter")]
@@ -277,9 +277,9 @@ namespace ScoreList.UI
             _filtersList.data.Clear();
             _filtersList.tableView.ReloadData();
             
-            _sort.Value = "PP";
             _sort.values = SortChoices;
             _sort.UpdateChoices();
+            _sort.Value = "PP";
             _sort.ApplyValue();
             
             _order.Value = "DESC";
@@ -357,15 +357,30 @@ namespace ScoreList.UI
             _accuracyTab.IsVisible = ranked;
             _ppTab.IsVisible = ranked;
 
+            var previous = _sort.Value;
+
             _sort.values = ranked ?  SortChoices : new List<object> { "Rank", "TimeSet", "MissedNotes" };
-            if (!_sort.values.Contains(_sort.Value)) _sort.Value = _sort.values.First();
-            
-            _sort.ApplyValue();
             _sort.UpdateChoices();
+            _sort.Value = _sort.values.Contains(previous) ? _sort.Value : "TimeSet";
+            _sort.ApplyValue();
+
+            var rankedSortFiltersTypes = new[] { typeof(SortAccuracyFilter), typeof(SortPpFilter), typeof(SortStarsFilter) };
+            var rankedFiltersTypes = new[] { typeof(StarsFilter), typeof(StarsFilter), typeof(AccuracyFilter), typeof(PpFilter) };
+
+            if (!ranked) {
+                if (rankedSortFiltersTypes.Any(t => t.IsInstanceOfType(Filters.Sort))) Filters.Sort = new SortTimeSetFilter();
+                
+                Filters.Filters.RemoveAll(f => rankedFiltersTypes.Any(t => t.IsInstanceOfType(f)));
+                _filtersList.data.RemoveAll(w =>   rankedFiltersTypes.Any(t => t.IsInstanceOfType(((FilterListCellWrapper) w)._filter)));
+                
+                _filtersList.tableView.ReloadData();
+            }
+
+            var rankedFilter = Filters.Filters.Find(f => f.GetType().IsAssignableFrom(typeof(RankedFilter)));
             
-            // TODO: figure out a better way to clear opposite filters
-            ResetFilters();
-            
+            Filters.Filters.Remove(rankedFilter);
+            Filters.Filters.Add(new RankedFilter(ranked));
+
             _scoreView.FilterScores(Filters.Values());
         }
         
@@ -431,10 +446,10 @@ namespace ScoreList.UI
             {
                 case "Stars":
                     float? starsMaximum = null;
-                    if (_filterStarsMaximum.Value != _filterStarsMaximum.slider.maxValue) starsMaximum = _filterStarsMaximum.Value;
+                    if (_filterStarsMaximum.Value != _filterStarsMaximum.slider.maxValue) starsMaximum = (int) _filterStarsMaximum.Value;
 
                     float? starsMinimum = null;
-                    if (_filterStarsMinimum.Value != 0f) starsMinimum = _filterStarsMinimum.Value;
+                    if (_filterStarsMinimum.Value != 0f) starsMinimum =  (int) _filterStarsMinimum.Value;
                     
                     if (starsMaximum != null || starsMinimum != null)
                         return new StarsFilter(starsMinimum, starsMaximum);
