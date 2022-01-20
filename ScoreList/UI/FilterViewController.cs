@@ -215,8 +215,8 @@ namespace ScoreList.UI
 
         // sort & order components
 
-        [UIComponent("sort")] readonly DropDownListSetting _sort;
-        [UIComponent("order")] readonly DropDownListSetting _order;
+        [UIComponent("sort")] readonly ListSetting _sort;
+        [UIComponent("order")] readonly ListSetting _order;
         [UIComponent("download-toggle")] readonly ToggleSetting _downloadToggle;
         [UIComponent("ranked-toggle")] readonly ToggleSetting _rankedToggle;
 
@@ -278,7 +278,6 @@ namespace ScoreList.UI
             _filtersList.tableView.ReloadData();
             
             _sort.values = SortChoices;
-            _sort.UpdateChoices();
             _sort.Value = "PP";
             _sort.ApplyValue();
             
@@ -360,7 +359,6 @@ namespace ScoreList.UI
             var previous = _sort.Value;
 
             _sort.values = ranked ?  SortChoices : new List<object> { "Rank", "TimeSet", "MissedNotes" };
-            _sort.UpdateChoices();
             _sort.Value = _sort.values.Contains(previous) ? _sort.Value : "TimeSet";
             _sort.ApplyValue();
 
@@ -481,11 +479,17 @@ namespace ScoreList.UI
 
                     string after = null;
                     if (dateAfterMonth != null || dateAfterYear != null)
-                        after = $"{dateAfterYear ?? 2018}-{dateAfterMonth ?? 1}-1";
+                    {
+                        var monthString = dateAfterMonth < 9 ? $"0{dateAfterMonth}" : dateAfterMonth.ToString();
+                        after = $"{dateAfterYear ?? 2018}-{monthString}-01";
+                    }
 
                     string before = null;
                     if (dateBeforeYear != null || dateBeforeMonth != null)
-                        before = $"{dateBeforeYear ?? 2018}-{dateBeforeMonth ?? 1}-1";
+                    {
+                        var monthString = dateBeforeMonth < 9 ? $"0{dateBeforeMonth}" : dateBeforeMonth.ToString();
+                        before = $"{dateBeforeYear ?? 2018}-{monthString}-01";
+                    }
 
                     if (after != null || before != null)
                         return new DateFilter(after, before);

@@ -142,8 +142,8 @@ namespace ScoreList.Scores
 
         public override string Display()
         {
-            if (_start != null && _end == null) return $"Bigger than {_start} stars";
-            if (_start == null && _end != null) return $"Smaller than {_end} stars";
+            if (_start != null && _end == null) return $"More than {_start} stars";
+            if (_start == null && _end != null) return $"Less than {_end} stars";
             return $"Between {_start} and {_end} stars";
         }
 
@@ -179,8 +179,8 @@ namespace ScoreList.Scores
 
         public override string Display()
         {
-            if (_start != null && _end == null) return $"Newer than {_start}";
-            if (_start == null && _end != null) return $"Older than {_end}";
+            if (_start != null && _end == null) return $"Newer than {_start:MMMM yyyy}";
+            if (_start == null && _end != null) return $"Older than {_end:MMMM yyyy}";
             return $"Between {_start} and {_end}";
         }
 
@@ -215,7 +215,7 @@ namespace ScoreList.Scores
         public override string Display()
         {
             if (_start != null && _end == null) return $"More than {_start} misses";
-            if (_start == null && _end != null) return $"Smaller than {_end} misses";
+            if (_start == null && _end != null) return $"Less than {_end} misses";
             return $"Between {_start} and {_end} misses";
         }
 
@@ -247,8 +247,8 @@ namespace ScoreList.Scores
 
         public override string Display()
         {
-            if (_start != null && _end == null) return $"Bigger than {(float)_start:#.00}%";
-            if (_start == null && _end != null) return $"Smaller than {(float)_end:#.00}%";
+            if (_start != null && _end == null) return $"More than {(float)_start:#.00}%";
+            if (_start == null && _end != null) return $"Less than {(float)_end:#.00}%";
             return $"Between {(float)_start:#.00}% and {(float)_end:#.00}%";
         }
 
@@ -282,8 +282,8 @@ namespace ScoreList.Scores
 
         public override string Display()
         {
-            if (_start != null && _end == null) return $"Bigger than {_start} PP";
-            if (_start == null && _end != null) return $"Smaller than {_end} PP";
+            if (_start != null && _end == null) return $"More than {_start} PP";
+            if (_start == null && _end != null) return $"Less than {_end} PP";
             return $"Between {_start} and {_end} PP";
         }
 

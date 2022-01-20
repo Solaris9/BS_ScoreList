@@ -1,10 +1,10 @@
-﻿<vertical vertical-fit="PreferredSize" pref-height="53" anchor-pos-y="25">
+﻿<vertical vertical-fit="PreferredSize" pref-height="90" anchor-pos-y="15">
 	<horizontal vertical-fit='PreferredSize' pref-height='6' spacing='4'>
 		<tab-selector tab-tag='tabs'/>
 	</horizontal>
 
 	<tab tags="tabs" tab-name="Filters">
-		<vertical vertical-fit="PreferredSize" anchor-pos-y="-15">
+		<vertical vertical-fit="PreferredSize" pref-height="75" anchor-pos-y="5">
 			<modal click-off-closes='true' show-event='ShowFilters' hide-event='HideFilters' size-delta-x='110' size-delta-y='65' bg='panel-top'>
 				<vertical pad-top='-6'>
 					<vertical pad-top='5' pad-bottom='15'>
@@ -75,31 +75,27 @@
 				</vertical>
 			</modal>
 
-			<vertical bg='panel-top' vertical-fit='PreferredSize' pad-left='5' pad-right='5' pad-bottom="1">
-				<horizontal>
-					<vertical preferred-width="36">
-						<text text="Sort" align="Center"/>
-						<dropdown-list-setting id='sort' text=' ' choices='sort-choices' on-change="SortChanged"/>
-					</vertical>
-					<vertical preferred-width="36">
-						<text text="Order" align="Center"/>
-						<dropdown-list-setting id='order'  text=' '  choices='order-choices' on-change="OrderChanged"/>
-					</vertical>
+			<vertical bg='panel-top' vertical-fit='PreferredSize' pad-left='5' pad-right='5'>
+				<horizontal spacing="1">
+					<horizontal preferred-width="47.5">
+						<list-setting id='sort' text='Sort' choices='sort-choices' on-change="SortChanged" />
+					</horizontal>
+					<horizontal preferred-width="47.5">
+						<list-setting id='order'  text='Order'  choices='order-choices' on-change="OrderChanged"/>
+					</horizontal>
 				</horizontal>
 				
 				<horizontal>
-					<vertical preferred-width="36">
-						<text text="Downloaded" align="Center" />
-						<checkbox id="download-toggle" text=" " interactable='false' on-change="DownloadedChanged"/>
+					<vertical preferred-width="47.5">
+						<checkbox id="download-toggle" text="Downloaded" interactable='false' on-change="DownloadedChanged"/>
 					</vertical>
-					<vertical preferred-width="36">
-						<text text="Ranked" align="Center"/>
-						<checkbox id="ranked-toggle" text=" " on-change="RankedChanged"/>
+					<vertical preferred-width="47.5">
+						<checkbox id="ranked-toggle" text="Ranked" on-change="RankedChanged"/>
 					</vertical>
 				</horizontal>
 			</vertical>
 
-			<horizontal pad-top='2' child-control-width="false" pref-height="40" anchor-pos-x="-5">
+			<horizontal pad-top='-2' pad-left="7" pref-height="42" spacing="-30">
 				<vertical>
 					<vertical id='no-filters-text' bg='panel-top' align='Center' pad-left='2' pad-right='2' pref-height="10">
 						<text text='No filters added yet'/>
@@ -116,12 +112,12 @@
 				
 				<vertical>
 					<page-button event-click='filters-list#PageUp' direction='Up' ignore-layout="true" anchor-pos-y="6" pref-width="5"/>
-					<page-button event-click='filters-list#PageDown' direction='Down' ignore-layout="true" anchor-pos-y="-23" pref-width="5"/>
+					<page-button event-click='filters-list#PageDown' direction='Down' ignore-layout="true" anchor-pos-y="-30" pref-width="5"/>
 				</vertical>
 				
 			</horizontal>
 			
-			<horizontal bg='panel-top' pad-bottom='1' pad-right='2' pad-left='2' spacing='5'>
+			<horizontal bg='panel-top' pad-bottom='1' pad-right='2' pad-left='2' spacing='2' horizontal-fit="PreferredSize">
 				<button text='Create Preset' on-click='CreatePreset'/>
 				<button text='Reset' on-click='ResetFilters'/>
 				<button text='Add Filter' click-event='ShowFilters'/>
@@ -130,10 +126,10 @@
 	</tab>
 
 	<tab tags="tabs" tab-name="Presets">
-		<vertical vertical-fit="PreferredSize">
-			<horizontal pad-top='18' pref-height="80" child-control-width="false">
+		<vertical vertical-fit="PreferredSize" anchor-pos-y="5">
+			<horizontal pref-height="65" child-control-width="false" >
 				<vertical pad-right="7">
-					<vertical id='no-presets-text' bg='panel-top' align='Center' pad-left='2' pad-right='2' pref-height="6">
+					<vertical id='no-presets-text' bg='panel-top' align='Center' pad-left='2' pad-right='2'>
 						<text text='No presets added yet'/>
 					</vertical>
 					<custom-list id='presets-list'>
