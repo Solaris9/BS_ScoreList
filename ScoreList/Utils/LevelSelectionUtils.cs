@@ -34,12 +34,12 @@ namespace ScoreList.Utils
             var beatmapLevelResult = await Loader.BeatmapLevelsModelSO.GetBeatmapLevelAsync($"custom_level_{hash}", token);
 
             var difficultyBeatmapSetArray = beatmapLevelResult.beatmapLevel.beatmapLevelData.difficultyBeatmapSets;
-            var beatmapCharacteristic =  difficultyBeatmapSetArray.First(s => s.difficultyBeatmaps.Any(d => d.difficulty == beatmapDifficulty)).beatmapCharacteristic;
+            var beatmapCharacteristic = difficultyBeatmapSetArray.First(s => s.difficultyBeatmaps.Any(d => d.difficulty == beatmapDifficulty)).beatmapCharacteristic;
 
             var beatmapLevelData = beatmapLevelResult.beatmapLevel.beatmapLevelData;
             var difficultyBeatmap = beatmapLevelData.GetDifficultyBeatmap(beatmapCharacteristic, beatmapDifficulty);
             
-            var beatmapModifiers = new GameplayModifiers(false, false, GameplayModifiers.EnergyType.Bar, true, false, false, GameplayModifiers.EnabledObstacleType.All, false, false, false, false, GameplayModifiers.SongSpeed.Normal, false, false, false, false, false);
+            var beatmapModifiers = new GameplayModifiers();
             
             var playerSpecificSettings = _playerDataModel.playerData.playerSpecificSettings;
             var practiceSettings = new PracticeSettings();

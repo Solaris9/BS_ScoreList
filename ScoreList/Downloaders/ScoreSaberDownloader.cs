@@ -78,7 +78,7 @@ namespace ScoreList.Downloaders
                 _wait = false;
             }
 
-            var request = await MakeRequestAsync(url, cancellationToken, new Action<float>(_ => { }));
+            var request = await MakeRequestAsync(url, cancellationToken);
 
             var remaining = int.Parse(request.GetResponseHeader("x-ratelimit-remaining"));
             if (remaining == 0)
@@ -94,7 +94,7 @@ namespace ScoreList.Downloaders
         private async Task<ScoreSaberUtils.ScoreSaberScoresMetadata> GetMetadata(CancellationToken cancellationToken)
         {
             var id = await GetUserID();
-            var url = API_URL + PLAYER + id + SCORES + $"?page=1&sort=recent&limit=100";
+            var url = API_URL + PLAYER + id + SCORES + "?page=1&sort=recent&limit=100";
             var data = await MakeScoreRequest<ScoreSaberUtils.ScoreSaberScores>(url, cancellationToken);
             return data.Metadata;
         }
