@@ -4,89 +4,124 @@ using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using ScoreList.Scores;
 using System;
-using System.IO;
+using System.Collections.Generic;
+using ScoreList.Downloaders;
+using SiraUtil.Logging;
+using TMPro;
+using UnityEngine.UI;
+using Zenject;
 
-namespace ScoreList.UI {
+#pragma warning disable CS0649
+
+namespace ScoreList.UI
+{
     public class ScoreInfoCellWrapper
     {
-        public LeaderboardScore score;
+        public readonly int ScoreId;
+        readonly LeaderboardScore _score;
+        readonly LeaderboardInfo _leaderboard;
+        readonly LeaderboardMapInfo _info;
+        private readonly ScoreSaberDownloader _downloader;
 
-        [UIValue("icon")] public string icon;
+        [UIValue("title")] readonly string title;
+        [UIValue("artist")] readonly string artist;
+        [UIValue("mapper")] readonly string mapper;
 
-        [UIValue("title")] public string title;
-        [UIValue("artist")] public string artist;
-        [UIValue("mapper")] public string mapper;
+        [UIValue("rank")] readonly string rank;
+        [UIValue("modifiers")] readonly string modifiers;
+        [UIValue("missed-notes")] readonly string missedNotes;
+        [UIValue("difficulty")] readonly string difficulty;
 
-        [UIValue("stars")] public string stars;
-        [UIValue("difficulty")] public string difficulty;
-        [UIValue("max-pp")] public string maxPP;
+        [UIComponent("stars")] readonly TextMeshProUGUI stars;
+        [UIComponent("accuracy-layout")] readonly LayoutElement accuracyLayout;
+        [UIComponent("pp-layout")] readonly LayoutElement ppLayout;
+        [UIComponent("accuracy")] readonly TextMeshProUGUI accuracy;
 
-        [UIValue("rank")] public string rank;
-        [UIValue("pp")] public string pp;
-        [UIValue("modifiers")] public string modifiers;
-        [UIValue("missed-notes")] public string missedNotes;
-        [UIValue("accuracy")] public string accuracy;
+        [UIComponent("max-pp")] readonly TextMeshProUGUI maxPP;
+        [UIComponent("pp")] readonly TextMeshProUGUI pp;
 
-        public ScoreInfoCellWrapper(LeaderboardScore score)
+        public ScoreInfoCellWrapper(LeaderboardScore score, LeaderboardInfo leaderboard, LeaderboardMapInfo info)
         {
-            this.score = score;
-            var leaderboard = score.GetLeaderboard().GetAwaiter().GetResult();
-            var info = score.GetMapInfo().GetAwaiter().GetResult();
-
-            icon = Path.Combine(Plugin.ModFolder, "icons", info.SongHash);
+            _score = score;
+            _leaderboard = leaderboard;
+            _info = info;
+            
+            ScoreId = score.ScoreId;
 
             title = info.SongName;
             if (title.Length > 25) title = title.Substring(0, 25) + "...";
 
             artist = info.SongAuthorName;
             mapper = info.LevelAuthorName;
-
-            stars = leaderboard.Stars.ToString("#.00★");
+                
             difficulty = SongUtils.GetDifficultyDisplay(leaderboard.Difficultly);
-            maxPP = leaderboard.MaxPP.ToString("#.00");
-
             rank = score.Rank.ToString();
-            pp = score.PP.ToString("#.00");
             modifiers = string.Join(", ", SongUtils.FormatModifiers(score.Modifiers));
             missedNotes = score.MissedNotes.ToString();
+        }
 
-            accuracy = (100f * score.BaseScore / leaderboard.MaxScore).ToString("0.##");
+        [UIAction("#post-parse")]
+        internal void SetupUI()
+        {
+            ppLayout.gameObject.SetActive(_leaderboard.Ranked);
+            accuracyLayout.gameObject.SetActive(_leaderboard.Ranked);
+            stars.gameObject.SetActive(_leaderboard.Ranked);
+            
+            if (_leaderboard.Ranked)
+            {
+                stars.text = _leaderboard.Stars.ToString("#.00★");
+                accuracy.text = (100f * _score.BaseScore / _leaderboard.MaxScore).ToString("0.##");
+                maxPP.text = _leaderboard.MaxPp.ToString("#.00");
+                pp.text = _score.Pp.ToString("#.00");
+            }
         }
     }
 
     [HotReload(RelativePathToLayout = @"Views\ScoreList.bsml")]
     [ViewDefinition("ScoreList.UI.Views.ScoreList.bsml")]
-    class ScoreViewController : BSMLAutomaticViewController {
-        public event Action<LeaderboardScore> didSelectSong;
+    public class ScoreViewController : BSMLAutomaticViewController
+    {
+        public event Action<int> DidSelectSong;
+        
+        [Inject] private readonly FilterViewController _scoreFilter;
+        [Inject] private readonly ScoreManager _scoreManager;
+        [Inject] private readonly SiraLog _siraLog;
 
-        [UIComponent("list")]
-        public CustomCellListTableData scoreList;
+        [UIComponent("list")] public CustomCellListTableData scoreList;
+        [UIComponent("no-scores-text")] readonly LayoutElement _noScoresText;
+
+        private void ToggleNoFiltersText(bool value) => _noScoresText.gameObject.SetActive(value);
 
         [UIAction("#post-parse")]
-        internal void SetupUI() {
-            var query = new SearchQuery {
-                SortBy = "PP",
-                Order = "DESC"
-            };
-
-            FilterScores(query);
-        }
+        internal void SetupUI() => _scoreFilter.ResetFilters();
 
         [UIAction("SongSelect")]
-        public void SongSelect(TableView _, object song) => didSelectSong?.Invoke(((ScoreInfoCellWrapper)song).score);
+        public void SongSelect(TableView _, object song) => DidSelectSong?.Invoke(((ScoreInfoCellWrapper)song).ScoreId);
 
-        public async void FilterScores(SearchQuery query) {
+        public async void FilterScores(List<BaseFilter> filters)
+        {
+            var scores = await _scoreManager.Query(filters);
+            
             scoreList.data.Clear();
+            scoreList.tableView.ReloadData();
 
-            var scores = await DatabaseManager.Client.Query<LeaderboardScore>(query.ToString());
+            ToggleNoFiltersText(scores.Count == 0);
+            if (scores.Count == 0) return;
 
-            foreach (LeaderboardScore score in scores) {
-                var scoreCell = new ScoreInfoCellWrapper(score);
+            foreach (var score in scores)
+            {
+                var leaderboard = await _scoreManager.GetLeaderboard(score.LeaderboardId);
+                var map = await _scoreManager.GetMapInfo(leaderboard.SongHash);
+                
+                var scoreCell = new ScoreInfoCellWrapper(score, leaderboard, map);
                 scoreList.data.Add(scoreCell);
             }
-
-            didSelectSong?.Invoke(((ScoreInfoCellWrapper)scoreList.data[0]).score);
+            
             scoreList.tableView.ReloadData();
+            _scoreManager.Clean();
+    
+            // select first song when new filters are applied
+            if (scoreList.data.Count > 0) DidSelectSong?.Invoke(((ScoreInfoCellWrapper)scoreList.data[0]).ScoreId);
         }
     }
 }

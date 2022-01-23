@@ -1,38 +1,26 @@
-﻿/*
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
+using IPA.Config.Stores.Attributes;
+using ScoreList.Scores;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace ScoreList.Configuration
 {
-    internal class PluginConfig
+    public class PluginConfig
     {
-        public static PluginConfig Instance { get; set; }
-        public virtual int IntValue { get; set; } = 42; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
+        public virtual bool Complete { get; set; }
+        // public virtual Dictionary<string, Dictionary<string, BaseFilter>> Presets { get; set;  } = new Dictionary<string, Dictionary<string, BaseFilter>>();
+        
+        [UseConverter]
+        public virtual List<FilterConfig> Presets { get; set;  } = new List<FilterConfig>();
+    }
 
-        /// <summary>
-        /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
-        /// </summary>
-        public virtual void OnReload()
-        {
-            // Do stuff after config is read from disk.
-        }
+    public class FilterConfig
+    {
+        public string Name { get; set; }
 
-        /// <summary>
-        /// Call this to force BSIPA to update the config file. This is also called by BSIPA if it detects the file was modified.
-        /// </summary>
-        public virtual void Changed()
-        {
-            // Do stuff when the config is changed.
-        }
-
-        /// <summary>
-        /// Call this to have BSIPA copy the values from <paramref name="other"/> into this config.
-        /// </summary>
-        public virtual void CopyFrom(PluginConfig other)
-        {
-            // This instance's members populated from other
-        }
+        [UseConverter]
+        public Dictionary<string, BaseFilter> Filters { get; set; } = new Dictionary<string, BaseFilter>();
     }
 }
-*/

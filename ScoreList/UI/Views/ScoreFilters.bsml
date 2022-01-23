@@ -1,89 +1,155 @@
-﻿<vertical>
-	<modal click-off-closes='true' show-event='ShowFilters' hide-event='HideFilters' size-delta-x='110' size-delta-y='60' bg='panel-top'>
-		<vertical pad-top='-6'>
-			<vertical pad-top='5' pad-bottom='15'>
-				<vertical bg='panel-top-gradient' vertical-fit='PreferredSize' pad-left='15' pad-right='15'>
-					<text text='Click the filter you want, alter its settings and add it!' align='Center'/>
-					<text text='Note: Only the current selected filter will be added' align='Center'/>
-				</vertical>
+﻿<vertical vertical-fit="PreferredSize" pref-height="90" anchor-pos-y="15">
+	<horizontal vertical-fit='PreferredSize' pref-height='6' spacing='4'>
+		<tab-selector tab-tag='tabs'/>
+	</horizontal>
 
-				<horizontal vertical-fit='PreferredSize' pref-height='6' spacing='4'>
-					<tab-selector tab-tag='filters' select-cell='FilterSelect'/>
-					<horizontal>
+	<tab tags="tabs" tab-name="Filters">
+		<vertical vertical-fit="PreferredSize" pref-height="75" anchor-pos-y="5">
+			<modal click-off-closes='true' show-event='ShowFilters' hide-event='HideFilters' size-delta-x='110' size-delta-y='65' bg='panel-top'>
+				<vertical pad-top='-6'>
+					<vertical pad-top='5' pad-bottom='15'>
+						<vertical bg='panel-top-gradient' vertical-fit='PreferredSize' pad-left='15' pad-right='15'>
+							<text text='Click the filter you want, alter its settings and add it!' align='Center'/>
+							<text text='Note: Only the current selected filter will be added' align='Center'/>
+						</vertical>
+
+						<horizontal vertical-fit='PreferredSize' pref-height='6' spacing='4'>
+							<tab-selector tab-tag='filters' select-cell='FilterSelect'/>
+						</horizontal>
+					</vertical>
+
+					<vertical pad-bottom='15'>
+						<tab id='stars-tab' tags='filters' tab-name='Stars'>
+							<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
+								<slider-setting id='filter-stars-minimum' text='Minimum amount of stars' increment='1' min='0' integer-only='true'/>
+								<slider-setting id='filter-stars-maximum' text='Maximum amount of stars' increment='1' min='0' integer-only='true'/>
+							</vertical>
+						</tab>
+
+						<tab id='pp-tab' tags='filters' tab-name='PP'>
+							<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
+								<slider-setting id='filter-pp-minimum' text='Minimum amount of PP' increment='10' min='0' integer-only='true'/>
+								<slider-setting id='filter-pp-maximum' text='Maximum amount of PP' increment='10' min='0' integer-only='true'/>
+							</vertical>
+						</tab>
+
+						<tab id='accuracy-tab' tags='filters' tab-name='Accuracy'>
+							<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
+								<slider-setting id='filter-accuracy-minimum' text='Minimum accuracy' increment='1' min='0' max='100' integer-only='true'/>
+								<slider-setting id='filter-accuracy-maximum' text='Maximum accuracy' increment='1' min='0' max='100' integer-only='true' value='max-accuracy'/>
+							</vertical>
+						</tab>
+
+						<tab tags='filters' tab-name='Misses'>
+							<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
+								<slider-setting id='filter-misses-minimum' text='Minimum amount of misses' increment='5' min='0' max='100' integer-only='true'/>
+								<slider-setting id='filter-misses-maximum' text='Maximum amount of misses' increment='5' min='0' max='100' integer-only='true' value='max-misses'/>
+							</vertical>
+						</tab>
+
+						<tab tags='filters' tab-name='Date'>
+							<horizontal vertical-fit='PreferredSize' horizontal-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' spacing='5'>
+								<vertical>
+									<text text='After Date: Month/Year'/>
+									<vertical child-control-width='true'>
+										<slider-setting id='filter-date-after-month' text='' increment='1' min='1'    max='12'        integer-only='true' pref-width='40' formatter='FormatMonth'/>
+										<slider-setting id='filter-date-after-year'  text='' increment='1' min='2018' max='~max-year' integer-only='true' pref-width='40'/>
+									</vertical>
+								</vertical>
+
+								<vertical>
+									<text text='Before Date: Month/Year'/>
+									<vertical  child-control-width='true'>
+										<slider-setting id='filter-date-before-month' text='' value='max-month' increment='1' min='1'    max='12'		  integer-only='true' pref-width='40' formatter='FormatMonth'/>
+										<slider-setting id='filter-date-before-year'  text='' value='max-year' increment='1' min='2018' max='~max-year' integer-only='true' pref-width='40' />
+									</vertical>
+								</vertical>
+							</horizontal>
+						</tab>
+					</vertical>
+
+					<horizontal horizontal-fit='PreferredSize' spacing='2'>
 						<button text='Add'   click-event='HideFilters' on-click='CreateFilter'/>
 						<button text='Close' click-event='HideFilters'/>
 					</horizontal>
-				</horizontal>
-			</vertical>
+				</vertical>
+			</modal>
 
-			<vertical pad-bottom='15'>
-				<tab tags='filters' tab-name='Stars'>
-					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
-						<slider-setting id='filter-stars-minimum' text='Minimum amount of stars' increment='0.5' min='0' max='14' integer-only='false'/>
-						<slider-setting id='filter-stars-maximum' text='Maximum amount of stars' increment='0.5' min='0' max='14' integer-only='false' value='max-stars'/>
-					</vertical>
-				</tab>
-
-				<tab tags='filters' tab-name='Accuracy'>
-					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
-						<slider-setting id='filter-accuracy-minimum' text='Minimum accuracy' increment='1' min='0.0' max='100' integer-only='true'/>
-						<slider-setting id='filter-accuracy-maximum' text='Maximum accuracy' increment='1' min='0.0' max='100' integer-only='true' value='max-accuracy'/>
-					</vertical>
-				</tab>
-
-				<tab tags='filters' tab-name='Misses'>
-					<vertical vertical-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' >
-						<slider-setting id='filter-misses-minimum' text='Minimum amount of misses' increment='5' min='0' max='100' integer-only='true'/>
-						<slider-setting id='filter-misses-maximum' text='Maximum amount of misses' increment='5' min='0' max='100' integer-only='true' value='max-misses'/>
-					</vertical>
-				</tab>
-
-				<tab tags='filters' tab-name='Date'>
-					<horizontal vertical-fit='PreferredSize' horizontal-fit='PreferredSize' bg='panel-top' pad-left='4' pad-right='4' spacing='5'>
-						<vertical>
-							<text text='After Date: Month/Year'/>
-							<vertical child-control-width='true'>
-								<slider-setting id='filter-date-after-month' text='' increment='1' min='1'    max='12'        integer-only='true' pref-width='40' formatter='FormatMonth'/>
-								<slider-setting id='filter-date-after-year'  text='' increment='1' min='2018' max='~max-year' integer-only='true' pref-width='40'/>
-							</vertical>
-						</vertical>
-
-						<vertical>
-							<text text='Before Date: Month/Year'/>
-							<vertical  child-control-width='true'>
-								<slider-setting id='filter-date-before-month' text='' value='max-month' increment='1' min='1'    max='12'		  integer-only='true' pref-width='40' formatter='FormatMonth'/>
-								<slider-setting id='filter-date-before-year'  text='' value='max-year' increment='1' min='2018' max='~max-year' integer-only='true' pref-width='40' />
-							</vertical>
-						</vertical>
+			<vertical bg='panel-top' vertical-fit='PreferredSize' pad-left='5' pad-right='5'>
+				<horizontal spacing="1">
+					<horizontal preferred-width="47.5">
+						<list-setting id='sort' text='Sort' choices='sort-choices' on-change="SortChanged" />
 					</horizontal>
-				</tab>
-			</vertical>
-		</vertical>
-	</modal>
-	
-	<vertical bg='panel-top' vertical-fit='PreferredSize' pad-left='4' pad-right='4' >
-		<dropdown-list-setting id='sort'  text='Sort'  choices='sort-choices' />
-		<dropdown-list-setting id='order' text='Order' choices='order-choices' />
-	</vertical>
-
-	<vertical pad='3' pad-left='3' pad-right='3' horizontal-fit='Unconstrained'>
-		<vertical id='no-filters-text' bg='panel-top' align='Center' pad='1' pad-left='2' pad-right='2'>
-			<text text='No filters added yet'/>
-		</vertical>
-		<custom-list id='list'>
-			<horizontal bg='panel-top' pad-left='3'>
-				<horizontal>
-					<text text='~name'/>
-					<text text='~data'/>
+					<horizontal preferred-width="47.5">
+						<list-setting id='order'  text='Order'  choices='order-choices' on-change="OrderChanged"/>
+					</horizontal>
 				</horizontal>
-				<button text='Remove' on-click='DeleteFilter'/>
+				
+				<horizontal>
+					<vertical preferred-width="47.5">
+						<checkbox id="download-toggle" text="Downloaded" interactable='false' on-change="DownloadedChanged"/>
+					</vertical>
+					<vertical preferred-width="47.5">
+						<checkbox id="ranked-toggle" text="Ranked" on-change="RankedChanged"/>
+					</vertical>
+				</horizontal>
+			</vertical>
+
+			<horizontal pad-top='-2' pad-left="7" pref-height="42" spacing="-30">
+				<vertical>
+					<vertical id='no-filters-text' bg='panel-top' align='Center' pad-left='2' pad-right='2' pref-height="10">
+						<text text='No filters added yet'/>
+					</vertical>
+					<custom-list id='filters-list'>
+						<horizontal bg='panel-top'>
+							<horizontal pad-top='1' pad-left="2">
+								<text text='~data'/>
+							</horizontal>
+							<button text='Remove' on-click='DeleteFilter'/>
+						</horizontal>
+					</custom-list>
+				</vertical>
+				
+				<vertical>
+					<page-button event-click='filters-list#PageUp' direction='Up' ignore-layout="true" anchor-pos-y="6" pref-width="5"/>
+					<page-button event-click='filters-list#PageDown' direction='Down' ignore-layout="true" anchor-pos-y="-30" pref-width="5"/>
+				</vertical>
+				
 			</horizontal>
-		</custom-list>
-	</vertical>
-	
-	<horizontal bg='panel-top' horizontal-fit='PreferredSize' pad-bottom='1' pad-right='2' pad-left='2' spacing='5'>
-		<button text='Apply' on-click='ApplyFilters'/>
-		<button text='Reset' on-click='ResetFilters'/>
-		<button text='Add' click-event='ShowFilters'/>
-	</horizontal>
+			
+			<horizontal bg='panel-top' pad-bottom='1' pad-right='2' pad-left='2' spacing='2' horizontal-fit="PreferredSize">
+				<button text='Create Preset' on-click='CreatePreset'/>
+				<button text='Reset' on-click='ResetFilters'/>
+				<button text='Add Filter' click-event='ShowFilters'/>
+			</horizontal>
+		</vertical>
+	</tab>
+
+	<tab tags="tabs" tab-name="Presets">
+		<vertical vertical-fit="PreferredSize" anchor-pos-y="5">
+			<horizontal pref-height="65" child-control-width="false" >
+				<vertical pad-right="7">
+					<vertical id='no-presets-text' bg='panel-top' align='Center' pad-left='2' pad-right='2'>
+						<text text='No presets added yet'/>
+					</vertical>
+					<custom-list id='presets-list'>
+						<horizontal bg='panel-top' pad-left='3'>
+							<horizontal pad-top='1'>
+								<text text='~name'/>
+							</horizontal>
+							<horizontal>
+								<button text='Apply' on-click='ApplyPreset'/>
+								<button text='Remove' on-click='DeletePreset'/>
+							</horizontal>
+						</horizontal>
+					</custom-list>
+				</vertical>
+				
+				<vertical vertical-fit="Unconstrained">
+					<page-button event-click='presets-list#PageUp' direction='Up' ignore-layout="true" anchor-pos-y="10" pref-width="7"/>
+					<page-button event-click='presets-list#PageDown' direction='Down' ignore-layout="true" anchor-pos-y="-40" pref-width="7"/>
+				</vertical>
+			</horizontal>
+		</vertical>
+	</tab>
 </vertical>

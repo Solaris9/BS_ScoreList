@@ -1,0 +1,6 @@
+﻿<horizontal>
+    <vertical>
+        <text id='cache-status' font-size="10.0" font-align="Center"/>
+        <primary-button id='cache-button' on-click='CacheScores'/>
+    </vertical>
+</horizontal>

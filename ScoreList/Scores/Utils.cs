@@ -1,26 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace ScoreList.Scores {
-    public class SongUtils {
-        public static Dictionary<string, int> Mapping = new Dictionary<string, int> {
-            { "NF", 1 },
-            { "OL", 2 },
-            { "FL", 4 },
-            { "NB", 8 },
-            { "NW", 16 },
-            { "NA", 32 },
-            { "GN", 64 },
-            { "DA", 128 },
-            { "SN", 256 },
-            { "PM", 512 },
-            { "SA", 1024 },
-            { "ZM", 2048 },
-            { "SS", 4096 },
-            { "FS", 8192 },
-            { "SF", 16384 }
-        };
-
+namespace ScoreList.Scores 
+{
+    [Flags]
+    public enum Modifiers
+    {
+        NF = 1,
+        OL = 2,
+        FL = 4,
+        NB = 8,
+        NW = 16,
+        NA = 32,
+        GN = 64,
+        DA = 128,
+        SN = 256,
+        PM = 512,
+        SA = 1024,
+        ZM = 2048,
+        SS = 4096,
+        FS = 8192,
+        SF = 16384,
+        SC = 32768
+    }
+    
+    public static class SongUtils
+    {
         public static int ParseModifiers(string value) {
             if (value.Equals("")) return 0;
 
@@ -28,19 +34,22 @@ namespace ScoreList.Scores {
             string[] modifiers = value.Split(',');
 
             foreach (string modifier in modifiers) {
-                var modifierBits = Mapping[modifier];
+                var modifierBits = (int) Enum.Parse(typeof(Modifiers), modifier);
                 if ((bitfield & modifierBits) != modifierBits) {
-                    bitfield += Mapping[modifier];
+                    bitfield += modifierBits;
                 }
             }
 
             return bitfield;
         }
 
-        public static List<string> FormatModifiers(int bitfield) => Mapping
-            .Where(entry => (bitfield & entry.Value) == entry.Value)
-            .Select(entry => entry.Key)
-            .ToList();
+        public static List<string> FormatModifiers(int bitfield) =>
+            Enum.GetNames(typeof(Modifiers))
+                .Where(name => {
+                    var bit = (int) Enum.Parse(typeof(Modifiers), name);
+                    return (bitfield & bit) == bit;
+                })
+                .ToList();
 
         public static string GetDifficultyDisplay(int diff)
         {
